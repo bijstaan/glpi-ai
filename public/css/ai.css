@@ -1,0 +1,616 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 Bijstaan */
+/**
+ * Settings page. Deliberately thin — the page is built from Tabler components
+ * that GLPI already themes, including its dark mode, so the only rules here are
+ * the ones Tabler has no class for.
+ */
+
+/* --tblr-bg-surface-tertiary, never --tblr-bg-surface-secondary.
+ *
+ * Core declares `--tblr-bg-surface-secondary: var(--tblr-light)` on :root, and
+ * its dark palette redefines `--tblr-light` to #e6e6e6 without redefining the
+ * surface token — so that one paints a near-white panel on a black page, with
+ * body-coloured (#e6e6e6) text on it. Measured at 1.00:1. The tertiary surface
+ * is derived from the body background and follows the theme.
+ */
+
+.glpiai-config .card.border-primary {
+    border-color: var(--tblr-primary, #206bc4) !important;
+}
+
+/* --------------------------------------------------------------- section nav
+ *
+ * A jump list, not tabs. Tabs would hide sections, and these settings are read
+ * against each other often enough — "is the master switch on, and is this
+ * entity permitted?" — that hiding one to show another costs more than the
+ * scrolling it saves.
+ */
+.glpiai-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    padding: .5rem 0;
+    background: var(--tblr-body-bg, #f6f8fb);
+}
+
+/* Anchored cards would otherwise land under the sticky nav that scrolled to
+   them, putting the heading just out of sight. */
+.glpiai-config .card[id] {
+    scroll-margin-top: 3.5rem;
+}
+
+/* ------------------------------------------------------------ provider cards
+ *
+ * The disclosure marker is dropped and the whole header made the target: a
+ * card header that is clickable only on a small triangle reads as broken.
+ */
+.glpiai-config details.card > summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.glpiai-config details.card > summary::-webkit-details-marker {
+    display: none;
+}
+
+.glpiai-config details.card > summary::after {
+    content: '';
+    margin-left: auto;
+    width: .5rem;
+    height: .5rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    opacity: .5;
+}
+
+.glpiai-config details.card[open] > summary::after {
+    transform: rotate(-135deg);
+}
+
+/* ------------------------------------------------------------------ save bar
+ *
+ * Pinned to the viewport because the form is one form: a change made anywhere
+ * on the page is only committed by this button, and it used to be several
+ * screens away from most of them.
+ */
+.glpiai-savebar {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    display: flex;
+    justify-content: flex-end;
+    padding: .75rem 0;
+    margin-top: .5rem;
+    background: var(--tblr-body-bg, #f6f8fb);
+    border-top: 1px solid var(--tblr-border-color, #dbe0e5);
+}
+
+/* Provider errors are quoted verbatim from the vendor and can be long,
+   single-token strings (a URL, a policy id) with nowhere to wrap. */
+.glpiai-test-result {
+    overflow-wrap: anywhere;
+    font-size: .8125rem;
+}
+
+/* --------------------------------------------------------------- triage panel
+ *
+ * Sits above the ticket fields, and is styled to read as an offer rather than
+ * as part of the record. Hence the dashed edge and the tinted ground: the
+ * things around it are what the ticket *is*, and this is what something thinks
+ * it might be.
+ */
+/* The section that carries the offer box inside the ITIL field panel: core's
+   .accordion-item draws the rules, this supplies the inline padding that lines
+   the box up with the section headers above it. */
+.glpiai-triage-section {
+    padding: 16px 20px;
+}
+
+.glpiai-triage {
+    padding: .625rem .75rem;
+    border: 1px dashed var(--tblr-border-color, #dbe0e5);
+    border-radius: 6px;
+    background: var(--tblr-bg-surface-tertiary, #f7f9fb);
+}
+
+.glpiai-triage.is-busy {
+    opacity: .6;
+    pointer-events: none;
+}
+
+.glpiai-triage-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+    font-size: .8125rem;
+}
+
+.glpiai-triage-label {
+    font-weight: 600;
+}
+
+.glpiai-triage-confidence {
+    font-size: .6875rem;
+    border-radius: 4px;
+    padding: .0625rem .3125rem;
+    background: var(--tblr-bg-surface, #fff);
+    border: 1px solid var(--tblr-border-color, #dbe0e5);
+}
+
+/* Low confidence is the one worth colouring. "Unsure" said quietly reads the
+ * same as "confident", and acting on the difference is the entire point. */
+.glpiai-triage-confidence--low {
+    color: var(--tblr-orange, #f76707);
+    border-color: currentColor;
+}
+
+.glpiai-triage-why {
+    color: var(--tblr-secondary, #7a8794);
+}
+
+.glpiai-triage-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+    margin-top: .5rem;
+}
+
+.glpiai-triage-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    font-size: .8125rem;
+    background: var(--tblr-bg-surface, #fff);
+    border: 1px solid var(--tblr-border-color, #dbe0e5);
+    border-radius: 999px;
+    padding: .125rem .25rem .125rem .625rem;
+}
+
+.glpiai-triage-chip-label {
+    color: var(--tblr-secondary, #7a8794);
+}
+
+.glpiai-triage-chip-value {
+    font-weight: 600;
+}
+
+.glpiai-triage-apply,
+.glpiai-triage-dismiss {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.375rem;
+    height: 1.375rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--tblr-secondary, #7a8794);
+    line-height: 1;
+}
+
+.glpiai-triage-apply:hover {
+    background: var(--tblr-green-lt, #e6f7ee);
+    color: var(--tblr-green, #2fb344);
+}
+
+.glpiai-triage-dismiss:hover {
+    background: var(--tblr-red-lt, #fbe7e7);
+    color: var(--tblr-red, #d63939);
+}
+
+.glpiai-triage-run {
+    margin-left: auto;
+    /* A <button> does not inherit color; the UA's ButtonText ink measured
+       1.53:1 on the dark surface. */
+    color: var(--tblr-body-color, inherit);
+    font-size: .75rem;
+    border: 1px solid var(--tblr-border-color, #dbe0e5);
+    border-radius: 4px;
+    background: var(--tblr-bg-surface, #fff);
+    padding: .0625rem .5rem;
+}
+
+.glpiai-triage-error {
+    display: block;
+    margin-top: .375rem;
+    font-size: .75rem;
+    color: var(--tblr-red, #d63939);
+}
+
+/* ------------------------------------------------------------------- drafts
+ *
+ * Generated prose is set apart from the interface around it rather than styled
+ * to match it. Everything else on a ticket is a record of something that
+ * happened; this is a proposal, and it should not be possible to skim past that
+ * distinction.
+ */
+.glpiai-draft.is-busy,
+.glpiai-solution-draft.is-busy {
+    opacity: .6;
+    pointer-events: none;
+}
+
+.glpiai-draft-title {
+    font-weight: 600;
+    margin-bottom: .375rem;
+}
+
+.glpiai-draft-body {
+    font-size: .875rem;
+    line-height: 1.55;
+    padding: .625rem .75rem;
+    border-left: 3px solid var(--tblr-primary, #206bc4);
+    background: var(--tblr-bg-surface-tertiary, #f7f9fb);
+    border-radius: 0 4px 4px 0;
+    max-height: 26rem;
+    overflow-y: auto;
+    white-space: normal;
+}
+
+/* The most useful line on the card, and the easiest to skip. Coloured so it is
+ * read before the prose above it rather than after. */
+.glpiai-draft-gaps {
+    margin-top: .5rem;
+    font-size: .8125rem;
+    color: var(--tblr-orange, #f76707);
+}
+
+.glpiai-draft-meta {
+    margin-top: .5rem;
+    font-size: .75rem;
+    color: var(--tblr-secondary, #7a8794);
+}
+
+.glpiai-draft-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .375rem;
+    margin-top: .75rem;
+}
+
+.glpiai-draft-confidence {
+    font-size: .6875rem;
+    border-radius: 4px;
+    padding: .0625rem .3125rem;
+    background: var(--tblr-bg-surface, #fff);
+    border: 1px solid var(--tblr-border-color, #dbe0e5);
+}
+
+.glpiai-draft-confidence--low {
+    color: var(--tblr-orange, #f76707);
+    border-color: currentColor;
+}
+
+.glpiai-draft-error {
+    display: block;
+    margin-top: .375rem;
+    font-size: .75rem;
+    color: var(--tblr-red, #d63939);
+}
+
+/* The strip above GLPI's solution editor. Deliberately quiet: it is an offer
+ * beside a field the technician came here to fill in themselves. */
+.glpiai-solution-draft {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: .5rem;
+    padding: .375rem .625rem;
+    font-size: .8125rem;
+    border: 1px dashed var(--tblr-border-color, #dbe0e5);
+    border-radius: 6px;
+    background: var(--tblr-bg-surface-tertiary, #f7f9fb);
+}
+
+.glpiai-solution-draft-label {
+    color: var(--tblr-secondary, #7a8794);
+}
+
+/* Rendered markdown in a draft card. The browser's defaults are set for a page;
+ * this is a half-width card, where a default <p> margin puts more space between
+ * two lines than there is between two sections. */
+.glpiai-md > *:first-child { margin-top: 0; }
+.glpiai-md > *:last-child { margin-bottom: 0; }
+
+.glpiai-md p,
+.glpiai-md ul,
+.glpiai-md ol,
+.glpiai-md pre {
+    margin: 0 0 .5rem;
+}
+
+.glpiai-md ul,
+.glpiai-md ol {
+    padding-left: 1.25rem;
+}
+
+.glpiai-md h1,
+.glpiai-md h2,
+.glpiai-md h3,
+.glpiai-md h4 {
+    font-size: .9375rem;
+    font-weight: 600;
+    margin: .625rem 0 .25rem;
+}
+
+.glpiai-md code {
+    font-size: .8125rem;
+    padding: .0625rem .25rem;
+    border-radius: 3px;
+    background: var(--tblr-bg-surface, #fff);
+}
+
+.glpiai-md pre {
+    padding: .5rem .625rem;
+    border-radius: 4px;
+    background: var(--tblr-bg-surface, #fff);
+    overflow-x: auto;
+}
+
+.glpiai-md pre code { padding: 0; background: transparent; }
+
+.glpiai-md table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: .8125rem;
+    margin-bottom: .5rem;
+}
+
+.glpiai-md th,
+.glpiai-md td {
+    border: 1px solid var(--tblr-border-color, #dbe0e5);
+    padding: .1875rem .375rem;
+    text-align: left;
+}
+
+/* A blank line between list items makes CommonMark emit a "loose" list, with a
+ * paragraph inside every item — and models write blank lines between items
+ * constantly. Without this each bullet carries a paragraph's bottom margin and
+ * a four-item list reads as four separate thoughts. */
+.glpiai-md li > p {
+    margin: 0;
+}
+
+.glpiai-md li > p + p {
+    margin-top: .25rem;
+}
+
+/* Models use a rule as a section break far more freely than a document would.
+ * The browser default reserves a page's worth of space around one. */
+.glpiai-md hr {
+    margin: .625rem 0;
+    border: 0;
+    border-top: 1px solid var(--tblr-border-color, #dbe0e5);
+}
+
+/* ----------------------------------------------------------------- dark theme
+ *
+ * Core declares `.text-muted { color: var(--tblr-muted) !important; }`
+ * (css/includes/_base.scss), so a scoped PROPERTY override — with or without
+ * its own !important — is a silent no-op: this plugin shipped exactly that on
+ * 2026-08-21 and measured 3.34:1 on auror_dark regardless. The override that
+ * lands is redefining the VARIABLE inside our scope; core's !important then
+ * legitimately resolves against our value. `.form-text` keys to
+ * `--tblr-secondary-color`, a Tabler literal no GLPI dark palette redefines
+ * (measured 1.05:1 on a dark ticket page — dark-on-dark), so both variables
+ * are redefined together and the two kinds of sub-text agree.
+ *
+ * Numbers are tuned on auror_dark (body #1f2936, --tblr-muted #757d91,
+ * surfaces LIGHTER than the body): transparent 10% of --tblr-body-color
+ * #9ca8c0 measures ~4.9:1 on the card surface; the 28% the old no-op used
+ * would undershoot at ~3.75:1. Never mix a token with itself here — a
+ * self-referencing variable redefinition is circular and silently invalid.
+ *
+ * `.glpiai-scope` is the companion wrapper the core-rendered showForm() pages
+ * (MCP server, assistant skill) emit around their forms — without it no
+ * plugin-scoped rule can structurally reach their .form-text at all.
+ */
+:root[data-glpi-theme-dark="1"] .glpiai-config,
+:root[data-glpi-theme-dark="1"] .glpiai-scope,
+:root[data-glpi-theme-dark="1"] .glpiai-drafts,
+:root[data-glpi-theme-dark="1"] .glpiai-triage,
+:root[data-glpi-theme-dark="1"] .glpiai-solution-draft {
+    --tblr-muted: color-mix(in srgb, var(--tblr-body-color), transparent 10%);
+    --tblr-secondary-color: color-mix(in srgb, var(--tblr-body-color), transparent 10%);
+}
+
+/* Fixed status colours still need their pairing checked per theme: full-
+ * saturation red/orange on the dark body measure 2.7–3.2:1. Tone lifts are
+ * property overrides (matching the utility's !important where it has one),
+ * never variable games. */
+:root[data-glpi-theme-dark="1"] .glpiai-config .text-red,
+:root[data-glpi-theme-dark="1"] .glpiai-scope .text-red {
+    /* Tabler's .text-red is !important; measured 2.95:1 on auror_dark. */
+    color: color-mix(in srgb, var(--tblr-red, #d63939), white 40%) !important;
+}
+
+:root[data-glpi-theme-dark="1"] .glpiai-triage-error,
+:root[data-glpi-theme-dark="1"] .glpiai-draft-error {
+    /* var(--tblr-red) alone measured 2.66–2.95:1 on the dark ground. */
+    color: color-mix(in srgb, var(--tblr-red, #d63939), white 40%);
+}
+
+:root[data-glpi-theme-dark="1"] .glpiai-draft-gaps,
+:root[data-glpi-theme-dark="1"] .glpiai-draft-confidence--low,
+:root[data-glpi-theme-dark="1"] .glpiai-triage-confidence--low {
+    /* var(--tblr-orange) is ~3.8:1 against the lifted tab surface. */
+    color: color-mix(in srgb, var(--tblr-orange, #f76707), white 30%);
+}
+
+/* -lt badges keep their text at the full-saturation hue; on auror_dark that
+ * measured 4.31:1 (green) — just under the floor. Lift the ink, keep the
+ * tint. Matching !important because the utility carries one. */
+:root[data-glpi-theme-dark="1"] .glpiai-config .badge.bg-green-lt,
+:root[data-glpi-theme-dark="1"] .glpiai-scope .badge.bg-green-lt {
+    color: color-mix(in srgb, var(--tblr-green, #2fb344), white 35%) !important;
+}
+
+:root[data-glpi-theme-dark="1"] .glpiai-config .badge.bg-blue-lt,
+:root[data-glpi-theme-dark="1"] .glpiai-scope .badge.bg-blue-lt {
+    /* blue-lt ink measured 2.53:1 on the MCP tool list. */
+    color: color-mix(in srgb, var(--tblr-blue, #206bc4), white 45%) !important;
+}
+
+/* The tool badges dim their source suffix with .opacity-75 (utility,
+ * !important): dimming the badge ink measured 3.8:1 on auror_dark. Opacity is
+ * compositing, so the floor needs ~.9 here. */
+:root[data-glpi-theme-dark="1"] .glpiai-config .badge .opacity-75,
+:root[data-glpi-theme-dark="1"] .glpiai-scope .badge .opacity-75 {
+    opacity: .9 !important;
+}
+
+/* Core styles <code> with its own accent ink and no dark variant — measured
+ * 2.12:1 inside a draft body on auror_dark. Dark-scoped so the light theme
+ * keeps core's look. */
+:root[data-glpi-theme-dark="1"] .glpiai-md code,
+:root[data-glpi-theme-dark="1"] .glpiai-config code,
+:root[data-glpi-theme-dark="1"] .glpiai-scope code {
+    color: var(--tblr-body-color);
+}
+
+/* The apply/dismiss hover tints lean on -lt tokens whose ink stays at full
+ * saturation; on auror_dark that pairing is the same trap as the -lt badges.
+ * Mix our own tint from the hue instead. */
+:root[data-glpi-theme-dark="1"] .glpiai-triage-apply:hover {
+    background: color-mix(in srgb, var(--tblr-green, #2fb344), transparent 80%);
+    color: color-mix(in srgb, var(--tblr-green, #2fb344), white 40%);
+}
+
+:root[data-glpi-theme-dark="1"] .glpiai-triage-dismiss:hover {
+    background: color-mix(in srgb, var(--tblr-red, #d63939), transparent 80%);
+    color: color-mix(in srgb, var(--tblr-red, #d63939), white 40%);
+}
+
+/* Core-wide gaps inside our scope, same family and same lift as the other
+ * plugins in this sweep (see e.g. glpi-report/public/css/report.css):
+ *  - core's "Delete permanently" purge control reads straight from
+ *    --tblr-danger with no auto-contrast — measured 2.95:1;
+ *  - the select2 multi-select remove glyph keeps its light-theme ink on the
+ *    dark chip — measured 1.09:1 on the entity allow-list;
+ *  - the form header's "Child entities" toggle dims its label with opacity
+ *    rather than a colour — composites to ~3.6:1. */
+:root[data-glpi-theme-dark="1"] .glpiai-config .btn-outline-danger,
+:root[data-glpi-theme-dark="1"] .glpiai-scope .btn-outline-danger,
+:root[data-glpi-theme-dark="1"] .glpiai-config .btn-ghost-danger,
+:root[data-glpi-theme-dark="1"] .glpiai-scope .btn-ghost-danger {
+    color: color-mix(in srgb, var(--tblr-danger, #d63939), white 40%);
+    border-color: color-mix(in srgb, var(--tblr-danger, #d63939), white 40%);
+}
+
+:root[data-glpi-theme-dark="1"] .glpiai-config .select2-container
+  .select2-selection.select2-selection--multiple .select2-selection__rendered
+  .select2-selection__choice .select2-selection__choice__remove,
+:root[data-glpi-theme-dark="1"] .glpiai-scope .select2-container
+  .select2-selection.select2-selection--multiple .select2-selection__rendered
+  .select2-selection__choice .select2-selection__choice__remove {
+    color: color-mix(in srgb, var(--tblr-body-color), transparent 5%);
+}
+
+:root[data-glpi-theme-dark="1"] .glpiai-config .form-check-label,
+:root[data-glpi-theme-dark="1"] .glpiai-scope .form-check-label {
+    opacity: 1;
+    color: color-mix(in srgb, var(--tblr-body-color), transparent 6%);
+}
+
+:root[data-glpi-theme-dark="1"] .glpiai-config .is_recursive-toggle .form-check-label,
+:root[data-glpi-theme-dark="1"] .glpiai-scope .is_recursive-toggle .form-check-label {
+    /* The pill's own ground is lighter than the card; full body-color only
+       reaches ~4.3:1 there. !important: the badge styling carries one. */
+    color: color-mix(in srgb, var(--tblr-body-color), white 15%) !important;
+}
+
+/* --- the reply review, in the followup editor ------------------------------
+ *
+ * Quieter than the solution-draft strip on purpose: that one offers something,
+ * this one is a second pair of eyes that usually has nothing to say. It sits
+ * above the editor and never moves it, because a control that reflows the box
+ * somebody is typing in is one they resent.
+ *
+ * Tabler variables throughout, with fallbacks — GLPI's dark palette redefines
+ * these, and a hard-coded panel here would be a light rectangle in a dark page.
+ */
+.glpiai-reply-review {
+    margin-bottom: .5rem;
+    font-size: .8125rem;
+}
+
+.glpiai-reply-review.is-busy {
+    opacity: .6;
+    pointer-events: none;
+}
+
+.glpiai-reply-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+    padding: .375rem .625rem;
+    border: 1px dashed var(--tblr-border-color, #dbe0e5);
+    border-radius: 6px;
+    background: var(--tblr-bg-surface-tertiary, #f7f9fb);
+}
+
+.glpiai-reply-label {
+    color: var(--tblr-secondary, #7a8794);
+}
+
+.glpiai-reply-result {
+    margin-top: .5rem;
+}
+
+.glpiai-reply-clean {
+    color: var(--tblr-secondary, #7a8794);
+    padding: .25rem .625rem;
+}
+
+.glpiai-reply-flags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.glpiai-reply-flag {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .25rem .5rem;
+    align-items: baseline;
+    padding: .5rem .625rem;
+    margin-bottom: .375rem;
+    border-left: 3px solid var(--tblr-warning, #f76707);
+    background: var(--tblr-bg-surface-tertiary, #f7f9fb);
+    border-radius: 0 4px 4px 0;
+}
+
+/* Internal content leaving the team is the one flag that is not a courtesy. */
+.glpiai-reply-flag-internal {
+    border-left-color: var(--tblr-danger, #d63939);
+}
+
+.glpiai-reply-kind {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.glpiai-reply-quote {
+    font-style: italic;
+    color: var(--tblr-secondary, #7a8794);
+}
+
+.glpiai-reply-why {
+    grid-column: 1 / -1;
+}
+
+.glpiai-reply-footnote {
+    color: var(--tblr-secondary, #7a8794);
+    padding: 0 .625rem;
+}

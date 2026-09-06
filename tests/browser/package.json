@@ -1,0 +1,9 @@
+{
+  "name": "glpi-ai-browser-tests",
+  "private": true,
+  "description": "Browser checks for glpi-ai, driven with Playwright against the dev instance.",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "playwright": "^1.62.1"
+  }
+}

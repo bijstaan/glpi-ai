@@ -1,0 +1,645 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 Bijstaan */
+/* The troubleshooting assistant: a launcher, and a panel that slides over.
+ *
+ * Over the page rather than beside it. A technician opens this mid-problem,
+ * with something already on screen that they want to keep looking at, so the
+ * panel takes the right-hand edge and leaves the rest alone — no reflow, no
+ * losing your place in a timeline because a sidebar appeared.
+ */
+
+/* --tblr-bg-surface-tertiary, never --tblr-bg-surface-secondary.
+ *
+ * Core declares `--tblr-bg-surface-secondary: var(--tblr-light)` on :root, and
+ * its dark palette redefines `--tblr-light` to #e6e6e6 without redefining the
+ * surface token — so that one paints a near-white panel on a black page, with
+ * body-coloured (#e6e6e6) text on it. Measured at 1.00:1. The tertiary surface
+ * is derived from the body background and follows the theme.
+ */
+/* In the header, beside the search box. It was a floating action button in the
+ * bottom-right corner first, which is exactly where a GLPI form puts Save — so
+ * it covered the one control on the page people press most. */
+.glpiai-assistant-launch {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    margin: 0 .25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--tblr-secondary, #7a8794);
+    font-size: 1.0625rem;
+    line-height: 1;
+}
+
+.glpiai-assistant-launch:hover {
+    background: var(--tblr-bg-surface-tertiary, #f2f5f8);
+    color: var(--tblr-primary, #206bc4);
+}
+
+/* Only when the header is not where it was expected — a GLPI that reorganises
+ * its chrome should cost the button its position, not its existence. Offset
+ * above the corner a form's Save button occupies. */
+.glpiai-assistant-launch--floating {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 5.5rem;
+    z-index: 1035;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    background: var(--tblr-primary, #206bc4);
+    /* Core's primary is gold with a dark ink token (--tblr-primary-fg, both
+       themes); literal #fff on it measured ~1.5:1. */
+    color: var(--tblr-primary-fg, #fff);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+}
+
+.glpiai-assistant {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1040;
+    display: flex;
+    flex-direction: column;
+    width: min(30rem, 100vw);
+    background: var(--tblr-bg-surface, #fff);
+    border-left: 1px solid var(--tblr-border-color, #dbe0e5);
+    box-shadow: -4px 0 16px rgb(0 0 0 / 12%);
+}
+
+.glpiai-assistant[hidden] {
+    display: none;
+}
+
+.glpiai-assistant-head {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .625rem .75rem;
+    border-bottom: 1px solid var(--tblr-border-color, #dbe0e5);
+    font-size: .875rem;
+}
+
+/* Which record the conversation started from. Truncated rather than wrapped:
+ * it is orientation, not content, and a two-line header pushes the log down. */
+.glpiai-assistant-context {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: .75rem;
+    color: var(--tblr-secondary, #7a8794);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.glpiai-assistant-history-toggle,
+.glpiai-assistant-clear,
+.glpiai-assistant-close {
+    flex: 0 0 auto;
+    border: 0;
+    background: transparent;
+    color: var(--tblr-secondary, #7a8794);
+    padding: .125rem .25rem;
+    line-height: 1;
+}
+
+.glpiai-assistant-history-toggle:hover,
+.glpiai-assistant-clear:hover,
+.glpiai-assistant-close:hover {
+    color: var(--tblr-body-color, #1d273b);
+}
+
+.glpiai-assistant-log {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: .75rem;
+    font-size: .8125rem;
+    line-height: 1.55;
+}
+
+.glpiai-assistant-turn {
+    margin-bottom: .75rem;
+}
+
+.glpiai-assistant-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    padding: .5rem .625rem;
+    border-radius: 8px;
+}
+
+/* The technician's own words are set apart, so a long thread stays scannable
+ * as a conversation rather than a wall. */
+.glpiai-assistant-turn--user .glpiai-assistant-text {
+    background: var(--tblr-primary-lt, #e9f0f9);
+    margin-left: 2rem;
+}
+
+.glpiai-assistant-turn--assistant .glpiai-assistant-text {
+    background: var(--tblr-bg-surface-tertiary, #f7f9fb);
+}
+
+.glpiai-assistant-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+    margin-top: .25rem;
+    font-size: .6875rem;
+}
+
+.glpiai-assistant-tool {
+    border-radius: 4px;
+    padding: .0625rem .3125rem;
+    color: var(--tblr-secondary, #7a8794);
+    background: var(--tblr-bg-surface-tertiary, #f2f5f8);
+    font-family: var(--tblr-font-monospace, monospace);
+}
+
+.glpiai-assistant-tool--error {
+    color: var(--tblr-red, #d63939);
+    background: var(--tblr-red-lt, #fbe7e7);
+}
+
+.glpiai-assistant-note {
+    font-size: .75rem;
+    color: var(--tblr-secondary, #7a8794);
+    margin-bottom: .5rem;
+}
+
+.glpiai-assistant-note--error {
+    color: var(--tblr-red, #d63939);
+}
+
+.glpiai-assistant-note--waiting::after {
+    content: '';
+    animation: glpiai-assistant-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes glpiai-assistant-dots {
+    0%   { content: ''; }
+    25%  { content: '.'; }
+    50%  { content: '..'; }
+    75%  { content: '...'; }
+}
+
+.glpiai-assistant-form {
+    display: flex;
+    gap: .375rem;
+    padding: .625rem .75rem;
+    border-top: 1px solid var(--tblr-border-color, #dbe0e5);
+}
+
+.glpiai-assistant-input {
+    flex: 1 1 auto;
+    resize: none;
+    font-size: .8125rem;
+    padding: .375rem .5rem;
+    border: 1px solid var(--tblr-border-color, #dbe0e5);
+    border-radius: 6px;
+    background: var(--tblr-bg-surface, #fff);
+    color: inherit;
+}
+
+.glpiai-assistant-send {
+    flex: 0 0 auto;
+    border: 0;
+    border-radius: 6px;
+    padding: 0 .75rem;
+    background: var(--tblr-primary, #206bc4);
+    /* Same pairing as core's own primary buttons: gold ground, dark ink. */
+    color: var(--tblr-primary-fg, #fff);
+}
+
+.glpiai-assistant-send:disabled {
+    opacity: .5;
+}
+
+/* Rendered markdown inside a turn.
+ *
+ * Tightened, because the defaults are set for a page and this is a column three
+ * inches wide: browser margins on a <p> or a <ul> put more space between two
+ * lines of an answer than there is between two turns. */
+.glpiai-assistant-md > *:first-child {
+    margin-top: 0;
+}
+
+.glpiai-assistant-md > *:last-child {
+    margin-bottom: 0;
+}
+
+.glpiai-assistant-md p,
+.glpiai-assistant-md ul,
+.glpiai-assistant-md ol,
+.glpiai-assistant-md pre,
+.glpiai-assistant-md table {
+    margin: 0 0 .5rem;
+}
+
+.glpiai-assistant-md ul,
+.glpiai-assistant-md ol {
+    padding-left: 1.25rem;
+}
+
+.glpiai-assistant-md li {
+    margin-bottom: .125rem;
+}
+
+/* Headings in a chat turn are a model's habit rather than a document's
+ * structure, so they are sized down to something that reads as emphasis. */
+.glpiai-assistant-md h1,
+.glpiai-assistant-md h2,
+.glpiai-assistant-md h3,
+.glpiai-assistant-md h4 {
+    font-size: .875rem;
+    font-weight: 600;
+    margin: .5rem 0 .25rem;
+}
+
+.glpiai-assistant-md code {
+    font-size: .8125rem;
+    padding: .0625rem .25rem;
+    border-radius: 3px;
+    background: var(--tblr-bg-surface-tertiary, #f2f5f8);
+    color: var(--tblr-body-color, #1d273b);
+}
+
+.glpiai-assistant-md pre {
+    padding: .5rem .625rem;
+    border-radius: 4px;
+    background: var(--tblr-bg-surface-tertiary, #f2f5f8);
+    overflow-x: auto;
+}
+
+.glpiai-assistant-md pre code {
+    padding: 0;
+    background: transparent;
+}
+
+/* Model output frequently contains a wide table of results. It scrolls inside
+ * its own box rather than widening the panel. */
+.glpiai-assistant-md table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: .75rem;
+}
+
+.glpiai-assistant-md th,
+.glpiai-assistant-md td {
+    border: 1px solid var(--tblr-border-color, #dbe0e5);
+    padding: .1875rem .375rem;
+    text-align: left;
+}
+
+.glpiai-assistant-md blockquote {
+    margin: 0 0 .5rem;
+    padding-left: .625rem;
+    border-left: 2px solid var(--tblr-border-color, #dbe0e5);
+    color: var(--tblr-secondary, #7a8794);
+}
+
+/* A blank line between list items makes CommonMark emit a "loose" list, with a
+ * paragraph inside every item — and models write blank lines between items
+ * constantly. Without this each bullet carries a paragraph's bottom margin and
+ * a four-item list reads as four separate thoughts. */
+.glpiai-assistant-md li > p {
+    margin: 0;
+}
+
+.glpiai-assistant-md li > p + p {
+    margin-top: .25rem;
+}
+
+/* Models use a rule as a section break far more freely than a document would.
+ * The browser default reserves a page's worth of space around one. */
+.glpiai-assistant-md hr {
+    margin: .625rem 0;
+    border: 0;
+    border-top: 1px solid var(--tblr-border-color, #dbe0e5);
+}
+
+/* --- past conversations ----------------------------------------------------
+ *
+ * The list takes the whole body of the panel rather than floating over the
+ * transcript, and the composer goes with it. A conversation you are choosing
+ * between is not one you are typing into, and a half-covered log behind a
+ * dropdown reads as two things at once on a 30rem panel.
+ */
+.glpiai-assistant-history {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: .5rem;
+}
+
+/* Swapped, not stacked: while the list is up the transcript and the composer
+ * are gone, which is also what stops a stray Enter asking the model something
+ * the reader cannot see. */
+.glpiai-assistant--history .glpiai-assistant-log,
+.glpiai-assistant--history .glpiai-assistant-form {
+    display: none;
+}
+
+.glpiai-assistant-history-toggle[aria-expanded="true"] {
+    color: var(--tblr-body-color, #1d273b);
+}
+
+.glpiai-assistant-history-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.glpiai-assistant-history-row {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--tblr-border-color, #dbe0e5);
+    padding: .5rem .375rem;
+    cursor: pointer;
+    color: inherit;
+}
+
+/* `-tertiary`, never `-secondary`: core declares the latter as --tblr-light,
+ * which every dark palette leaves near-white — a row that lights up white on
+ * hover in a dark panel. Same rule the rest of this plugin's CSS follows. */
+.glpiai-assistant-history-row:hover,
+.glpiai-assistant-history-row:focus-visible {
+    background: var(--tblr-bg-surface-tertiary, #f7f9fb);
+}
+
+/* The conversation already on screen. Marked rather than hidden — it is the
+ * one people look for first, to check they are where they think they are. */
+.glpiai-assistant-history-row.is-current {
+    border-left: 2px solid var(--tblr-primary, #d4a017);
+    padding-left: .25rem;
+}
+
+/* Two lines, and the first one is the whole point: a thread is named from its
+ * first question, so the title is what was asked. Clamped rather than
+ * truncated at one line — a question is a sentence. */
+.glpiai-assistant-history-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: .8125rem;
+    line-height: 1.4;
+}
+
+.glpiai-assistant-history-meta {
+    display: block;
+    margin-top: .125rem;
+    font-size: .75rem;
+    color: var(--tblr-secondary, #7a8794);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.glpiai-assistant-history-empty {
+    margin: .75rem .375rem;
+    font-size: .8125rem;
+    color: var(--tblr-secondary, #7a8794);
+}
+
+/* ----------------------------------------------------------------- dark theme
+ *
+ * The panel and its launcher are appended to <body>, outside every page
+ * container — the scope class has to ride the mount nodes themselves. Same
+ * mechanics as ai.css: `.text-muted` can only be fixed by redefining
+ * --tblr-muted inside the scope (core's own !important wins any property
+ * override), and `.form-text` keys to --tblr-secondary-color, which no GLPI
+ * dark palette redefines. Rendered followup/task text quoted into the log
+ * inherits these too. */
+:root[data-glpi-theme-dark="1"] .glpiai-assistant {
+    --tblr-muted: color-mix(in srgb, var(--tblr-body-color), transparent 10%);
+    --tblr-secondary-color: color-mix(in srgb, var(--tblr-body-color), transparent 10%);
+}
+
+/* Full-saturation red on the dark surface measures under the floor; lift the
+ * ink and mix the tint from the hue rather than trusting the -lt token's
+ * fixed pairing. */
+:root[data-glpi-theme-dark="1"] .glpiai-assistant-tool--error,
+:root[data-glpi-theme-dark="1"] .glpiai-assistant-note--error {
+    color: color-mix(in srgb, var(--tblr-red, #d63939), white 40%);
+}
+
+:root[data-glpi-theme-dark="1"] .glpiai-assistant-tool--error {
+    background: color-mix(in srgb, var(--tblr-red, #d63939), transparent 85%);
+}
+
+/* --- the live run ----------------------------------------------------------
+ *
+ * What a question looks like while it is being answered: a status line, the
+ * tool calls as they happen, the model's thinking where the vendor sends it,
+ * and the answer arriving a word at a time. All of it is inside the assistant
+ * turn it belongs to, so it scrolls with the conversation and leaves the
+ * evidence in place afterwards rather than clearing itself.
+ *
+ * Tabler variables throughout — the panel is themed by GLPI, and a hard-coded
+ * grey here is a light rectangle in a dark sidebar.
+ */
+.glpiai-assistant-status {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .8125rem;
+    color: var(--tblr-secondary, #7a8794);
+    margin-bottom: .375rem;
+}
+
+/* The one moving thing on the panel, and the whole point of it: a still panel
+ * reads as a broken one. Kept to an opacity pulse rather than a spinner —
+ * motion that says "working" without pretending to measure progress. */
+.glpiai-assistant-pulse {
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background: var(--tblr-primary, #206bc4);
+    animation: glpiai-assistant-pulse 1.4s ease-in-out infinite;
+    flex: none;
+}
+
+@keyframes glpiai-assistant-pulse {
+    0%, 100% { opacity: .25; transform: scale(.85); }
+    50%      { opacity: 1;   transform: scale(1); }
+}
+
+/* Somebody who has asked not to see motion gets a dot that simply sits there.
+ * The status *text* still changes on every step, which is the information. */
+@media (prefers-reduced-motion: reduce) {
+    .glpiai-assistant-pulse { animation: none; opacity: .6; }
+}
+
+.glpiai-assistant-steps:not(:empty) {
+    margin-bottom: .5rem;
+}
+
+.glpiai-assistant-step {
+    font-size: .75rem;
+    padding: .25rem .5rem;
+    margin-bottom: .25rem;
+    border-left: 2px solid var(--tblr-border-color, #dbe0e5);
+    background: var(--tblr-bg-surface-tertiary, #f2f5f8);
+    border-radius: 0 4px 4px 0;
+}
+
+.glpiai-assistant-step.is-running {
+    border-left-color: var(--tblr-primary, #206bc4);
+}
+
+.glpiai-assistant-step.is-error {
+    border-left-color: var(--tblr-red, #d63939);
+}
+
+.glpiai-assistant-step-head {
+    display: flex;
+    align-items: baseline;
+    gap: .375rem;
+}
+
+.glpiai-assistant-step-name {
+    font-family: var(--tblr-font-monospace, monospace);
+    font-weight: 600;
+}
+
+/* The arguments take the slack and lose the overflow: they are the half worth
+ * glancing at — did it look up the right ticket — and not worth wrapping to
+ * three lines when a model passes a paragraph. */
+.glpiai-assistant-step-args {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--tblr-secondary, #7a8794);
+}
+
+.glpiai-assistant-step-time {
+    flex: none;
+    color: var(--tblr-secondary, #7a8794);
+    font-variant-numeric: tabular-nums;
+}
+
+.glpiai-assistant-step-result summary {
+    cursor: pointer;
+    color: var(--tblr-secondary, #7a8794);
+    margin-top: .25rem;
+}
+
+.glpiai-assistant-step-result pre {
+    margin: .25rem 0 0;
+    padding: .375rem .5rem;
+    max-height: 12rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: .7rem;
+    background: var(--tblr-bg-surface, #fff);
+    border: 1px solid var(--tblr-border-color, #dbe0e5);
+    border-radius: 4px;
+}
+
+/* Collapsed by default. Reasoning is worth being able to read and not worth
+ * reading every time, and a panel that opened with six paragraphs of thinking
+ * above the answer would bury the answer. */
+.glpiai-assistant-thinking {
+    font-size: .75rem;
+    margin-bottom: .5rem;
+    color: var(--tblr-secondary, #7a8794);
+}
+
+.glpiai-assistant-thinking summary {
+    cursor: pointer;
+}
+
+.glpiai-assistant-thinking-text {
+    margin-top: .25rem;
+    padding-left: .5rem;
+    border-left: 2px dashed var(--tblr-border-color, #dbe0e5);
+    white-space: pre-wrap;
+    max-height: 14rem;
+    overflow: auto;
+}
+
+/* A caret at the end of the text while it is still arriving, so a pause
+ * between tokens reads as a pause rather than as the end of the answer. */
+.glpiai-assistant-streaming::after {
+    content: '';
+    display: inline-block;
+    width: .45em;
+    height: 1em;
+    margin-left: .1em;
+    vertical-align: text-bottom;
+    background: currentColor;
+    opacity: .5;
+    animation: glpiai-assistant-caret 1s step-end infinite;
+}
+
+@keyframes glpiai-assistant-caret {
+    50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glpiai-assistant-streaming::after { animation: none; }
+}
+
+/* What the model said on its way to a tool call. Muted, because it is
+ * narration rather than the answer — but kept, because a panel that shows a
+ * sentence and then deletes it looks like it lost something. */
+.glpiai-assistant-aside {
+    font-size: .8125rem;
+    color: var(--tblr-secondary, #7a8794);
+    margin-bottom: .375rem;
+}
+
+/* --- how much of the working is shown --------------------------------------
+ *
+ * Two modes, one class on the panel. `is-compact` keeps the running step and
+ * folds the finished ones behind a line that says how many there are; without
+ * it every step stays where it was. Doing it in CSS rather than by removing
+ * nodes is what lets the toggle reflow a run that is already on screen —
+ * including one still in progress.
+ */
+.glpiai-assistant-steps-mode {
+    background: none;
+    border: 0;
+    padding: .125rem .25rem;
+    color: inherit;
+    opacity: .7;
+    cursor: pointer;
+}
+
+.glpiai-assistant-steps-mode:hover {
+    opacity: 1;
+}
+
+.glpiai-assistant-steps-summary {
+    display: block;
+    background: none;
+    border: 0;
+    padding: 0 0 .25rem;
+    font-size: .75rem;
+    color: var(--tblr-secondary, #7a8794);
+    text-decoration: underline dotted;
+    cursor: pointer;
+}
+
+/* Only compact mode hides anything. In full mode the summary is pointless, so
+ * it goes too — a line offering to reveal what is already visible is noise. */
+.glpiai-assistant:not(.is-compact) .glpiai-assistant-steps-summary {
+    display: none;
+}
+
+.glpiai-assistant.is-compact .glpiai-assistant-steps:not(.is-open) .glpiai-assistant-step.is-past {
+    display: none;
+}
