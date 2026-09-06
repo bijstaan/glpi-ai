@@ -13,9 +13,8 @@
  * gate on whether data may leave at all, and a usage log recording which model
  * answered.
  *
- * The features themselves are in docs/features.md. They are all technician-
- * facing by design: the model proposes, a person disposes, and nothing reaches
- * a requester unread. See that file for why.
+ * The features are all technician-facing by design: the model proposes, a
+ * person disposes, and nothing reaches a requester unread.
  */
 
 use Glpi\Plugin\Hooks;

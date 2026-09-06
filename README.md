@@ -1,7 +1,7 @@
 # GLPI AI
 
-A vendor-neutral model layer for GLPI, and the place the AI features listed in
-[docs/features.md](https://gitlab.rfni.dev/norsewind/glpi-erpnext-mods/-/wikis/glpi-ai/features) will be built.
+A vendor-neutral model layer for GLPI, and the substrate the AI features below
+are built on.
 
 Underneath is the substrate everything else depends on, and it was built first
 on purpose: one normalised request vocabulary, four provider adapters, tool
@@ -39,18 +39,15 @@ Requires GLPI 11.0 or later. Depends on nothing outside GLPI's own vendor tree.
   which each of them connects from *My settings → AI connections*. The
   writes are off until an administrator turns them on, none of them is
   customer-facing, and none of them deletes anything. Past eight registered
-  tools the model searches for them rather than being handed all of them. See
-  [docs/tools.md](https://gitlab.rfni.dev/norsewind/glpi-erpnext-mods/-/wikis/glpi-ai/tools).
+  tools the model searches for them rather than being handed all of them.
 - **Triage suggestions** on tickets that arrived as prose: a proposed category,
   urgency, impact and procedure, offered as chips above the ticket fields.
   Nothing is applied without a click, and every accept and dismiss is recorded —
-  which is what turns "the AI seems decent" into a number per field. See
-  [docs/triage.md](https://gitlab.rfni.dev/norsewind/glpi-erpnext-mods/-/wikis/glpi-ai/triage).
+  which is what turns "the AI seems decent" into a number per field.
 - **Solution and article drafting** from the evidence on a worked ticket — the
   followups, the tasks, and the checks a procedure recorded. The solution is
   offered inside GLPI's own editor and inserted
-  only on a click; the article is created unpublished. See
-  [docs/drafting.md](https://gitlab.rfni.dev/norsewind/glpi-erpnext-mods/-/wikis/glpi-ai/drafting).
+  only on a click; the article is created unpublished.
 - **HEIMDALL** — Helpdesk Endpoint Inspection, Monitoring, Diagnostics And Live
   Lookup — a troubleshooting agent in a panel over any page, which knows what
   the technician has open and can reach every registered tool, including
@@ -64,14 +61,12 @@ Requires GLPI 11.0 or later. Depends on nothing outside GLPI's own vendor tree.
   conversations are listed in the panel and resume in place — the panel opens
   the thread for the page you are on, which is no help when the question you
   want back was asked somewhere else.
-  See [docs/assistant.md](https://gitlab.rfni.dev/norsewind/glpi-erpnext-mods/-/wikis/glpi-ai/assistant).
 - **Reply review** — the one place a model here touches customer-facing text,
   and it touches it by reading. A technician writing a reply can ask for a
   second read before sending: internal content carried across, an unexplained
   term, no statement of what happens next, the wrong tone. Remarks, never a
   rewrite; Save is never blocked. Off by default, because to spot a leak it has
-  to be given the internal notes to compare against. See
-  [docs/reply-review.md](https://gitlab.rfni.dev/norsewind/glpi-erpnext-mods/-/wikis/glpi-ai/reply-review).
+  to be given the internal notes to compare against.
 - **A usage log**: provider, model, tier, token counts, duration and a prompt
   fingerprint, per entity and per user — and a separate audit trail of every
   tool call the model made.
@@ -83,8 +78,7 @@ Requires GLPI 11.0 or later. Depends on nothing outside GLPI's own vendor tree.
 - **Talk to a customer.** Every feature here is technician-facing. The single
   customer-adjacent case is a model *reviewing* a reply a human wrote, never
   writing one — that is reply review above, and it returns remarks rather than
-  text on purpose. See [docs/features.md](https://gitlab.rfni.dev/norsewind/glpi-erpnext-mods/-/wikis/glpi-ai/features) for why the line is
-  where it is.
+  text on purpose.
 - **Fall back between vendors.** One provider is active at a time. A fallback
   chain sounds like resilience and means a request can land at a vendor the
   entity policy was never written for.
@@ -108,10 +102,6 @@ Setup → AI.
 
 ![A successful connection test](docs/screenshots/ai-03-connected.png)
 
-Per-vendor specifics — Azure's two deployment styles, Entra service principals,
-which output-limit parameter to pick, what to do when a gateway rejects a
-schema — are in [docs/providers.md](https://gitlab.rfni.dev/norsewind/glpi-erpnext-mods/-/wikis/glpi-ai/providers).
-
 ### Tools
 
 ![Tool calling](docs/screenshots/ai-06-tools.png)
@@ -122,10 +112,6 @@ the rights and entity restriction of the signed-in user, so a model can only
 reach what the technician driving it could have done by hand; tools that change
 data are off by default and switched on separately from the master switch.
 External MCP servers are connected under Setup → AI → MCP servers.
-
-[docs/tools.md](https://gitlab.rfni.dev/norsewind/glpi-erpnext-mods/-/wikis/glpi-ai/tools) covers the safety model, the fifteen native
-tools, what the writes deliberately cannot do, how another plugin registers its
-own, and what of MCP is supported.
 
 ### The entity gate
 
@@ -422,14 +408,6 @@ src/Reply/           reply review: the reviewer, the strip in the followup
 front/config.php     the settings page, generated from the declared fields
 front/mcp/           the MCP server list and form
 ajax/test.php        the connection test
-docs/features.md     the roadmap this substrate exists for
-docs/providers.md    per-vendor configuration
-docs/assistant.md    HEIMDALL: the troubleshooting panel, and what it can and
-                     cannot reach
-docs/drafting.md     solution and article drafting, and where each one lands
-docs/tools.md        tool calling and MCP
-docs/triage.md       triage suggestions, and how their accuracy is measured
-docs/reply-review.md reading a reply before it is sent, and what it may say
 ```
 
 Adding a fifth vendor is one class and one line in `Registry`. The settings
