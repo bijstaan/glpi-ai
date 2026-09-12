@@ -7,15 +7,23 @@
 namespace GlpiPlugin\Glpiai;
 
 use GlpiPlugin\Glpiai\Mcp\Catalogue;
+use GlpiPlugin\Glpiai\Tools\Customer;
+use GlpiPlugin\Glpiai\Tools\Estate;
 use GlpiPlugin\Glpiai\Tools\FindAsset;
 use GlpiPlugin\Glpiai\Tools\History;
 use GlpiPlugin\Glpiai\Tools\Network;
 use GlpiPlugin\Glpiai\Tools\People;
 use GlpiPlugin\Glpiai\Tools\ReadAsset;
+use GlpiPlugin\Glpiai\Tools\ReadItil;
 use GlpiPlugin\Glpiai\Tools\ReadTicket;
 use GlpiPlugin\Glpiai\Tools\SearchItil;
 use GlpiPlugin\Glpiai\Tools\SearchKnowledge;
 use GlpiPlugin\Glpiai\Tools\SearchTickets;
+use GlpiPlugin\Glpiai\Tools\Team;
+use GlpiPlugin\Glpiai\Tools\Stats;
+use GlpiPlugin\Glpiai\Tools\ServiceLevel;
+use GlpiPlugin\Glpiai\Tools\Workflow;
+use GlpiPlugin\Glpiai\Tools\WriteItil;
 use GlpiPlugin\Glpiai\Tools\WriteKnowledge;
 use GlpiPlugin\Glpiai\Tools\WriteTicket;
 
@@ -84,28 +92,40 @@ final class ToolRegistry
      * Two groups, and the line between them is the one that matters.
      *
      * **The reads** answer the questions a technician has before they can do
-     * anything: what is this ticket, who is this person, what is this machine,
-     * what changed on it, has anybody seen it before, and is there already a
-     * change or a problem about it. They cost tokens and nothing else.
+     * anything, and they now cover the four things GLPI knows that no page
+     * puts in one place: the *record* (a ticket, a problem, a change, and what
+     * was actually said on it), the *promise* (which service level applies,
+     * what is left of it, what has already gone), the *customer* (who they
+     * are, what has been agreed with them, what they have and what it is
+     * costing them), and the *people* (who is in a group, whose diary is
+     * already full, who was asked to approve something and has not answered).
+     * `ticket_stats` is the odd one out and is here for a specific failure: a
+     * model asked "how many" used to count the rows a capped search happened
+     * to return. They cost tokens and nothing else.
      *
-     * **The writes** — five of them — were held back for a long time on the
+     * **The writes** — six of them — were held back for a long time on the
      * grounds that a model which can only look things up is wrong in ways a
      * technician notices and discards, while one that can write is wrong in
      * ways that end up in a ticket's history under somebody's name. That is
      * still true, and it is an argument for *which* writes rather than for
      * none: what shipped is the work a technician does twenty times a day and
      * resents — write down what was found, log the time, fix the filing, link
-     * the duplicates, save the article — with the customer-facing and
-     * irreversible parts deliberately absent. A note is always private, no tool
-     * changes status or assignment, nothing is deleted, and every one of them
-     * needs the administrator's write-tools switch before it exists at all.
-     * See {@see Tools\WriteTicket} for the reasoning per tool.
+     * the duplicates, attach the machine, save the article — with the
+     * customer-facing and irreversible parts deliberately absent. A note is
+     * always private, no tool changes status or assignment, nothing is
+     * deleted, nothing is unlinked, and every one of them needs the
+     * administrator's write-tools switch before it exists at all. See
+     * {@see Tools\WriteTicket} and {@see Tools\WriteItil} for the reasoning
+     * per tool.
      *
-     * Pinning follows the same split. Everything a routine question needs is
-     * declared on every request; the rest — history, the ITIL search, and every
-     * write — is found through `find_tools`, because a request that declares
-     * eleven native schemas before the plugins have added theirs is one where
-     * the model chooses worse and the bill is larger.
+     * Pinning is what keeps the set from costing what it looks like it should.
+     * Five reads are declared on every request — the ones a ticket-shaped
+     * question needs, plus `sla_status`, because "how long have I got" is
+     * asked about the ticket in front of you and not about the estate.
+     * Everything else, including every estate-wide read and every write, is
+     * found through `find_tools`: a request that declares twenty-nine native
+     * schemas before the plugins have added theirs is one where the model
+     * chooses worse and the bill is larger.
      *
      * @return Tool[]
      */
@@ -114,6 +134,9 @@ final class ToolRegistry
         return array_merge([
             SearchTickets::tool(),
             ReadTicket::tool(),
+            ReadItil::tool(),
+            ServiceLevel::tool(),
+            Stats::tool(),
             SearchKnowledge::tool(),
             FindAsset::tool(),
             ReadAsset::tool(),
@@ -123,7 +146,7 @@ final class ToolRegistry
             Network::trace(),
             Network::ports(),
             WriteKnowledge::tool(),
-        ], WriteTicket::tools());
+        ], Customer::tools(), Estate::tools(), Team::tools(), Workflow::tools(), WriteItil::tools(), WriteTicket::tools());
     }
 
     /**

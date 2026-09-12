@@ -160,9 +160,23 @@ check('every name is portable across all four vendors',
 $writers = array_values(array_filter($native, static fn(Tool $t): bool => $t->mutates));
 $readers = array_values(array_filter($native, static fn(Tool $t): bool => !$t->mutates));
 
-check('every read declares the right it needs, or does not need one',
+// The exceptions are the tools whose gate cannot be one profile bit, and each
+// one checks harder than a declared right would: read_itil resolves the right
+// per itemtype (declaring `problem` would hand every change to whoever held
+// it), read_entity and read_validations and notification_status are gated on
+// access to the record itself, which is what GLPI gates an entity and an
+// approval on. Anything else with a null right is a tool that forgot.
+$item_gated = ['item_history', 'read_itil', 'read_entity', 'read_validations',
+    'notification_status'];
+
+check('every read declares the right it needs, or is gated on the item itself',
     array_reduce($readers, static fn(bool $c, Tool $t): bool
-        => $c && ($t->right !== null || $t->name === 'item_history'), true));
+        => $c && ($t->right !== null || in_array($t->name, $item_gated, true)), true),
+    implode(',', array_map(
+        static fn(Tool $t): string => $t->name,
+        array_filter($readers, static fn(Tool $t): bool
+            => $t->right === null && !in_array($t->name, $item_gated, true))
+    )));
 
 check('every write declares a right',
     array_reduce($writers, static fn(bool $c, Tool $t): bool => $c && $t->right !== null, true));

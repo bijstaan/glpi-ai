@@ -28,18 +28,29 @@ Requires GLPI 11.0 or later. Depends on nothing outside GLPI's own vendor tree.
   `glpi:security:changekey` rotates them and the change history masks them.
 - **A tenant gate.** Which entities may have their data sent to a provider is
   configuration, and the default permits nothing.
-- **Tool calling**, on all four vendors: fifteen native tools over GLPI's own
-  data — ten reads (tickets, changes and problems, assets, people, and what
-  GLPI recorded changing on any of them) and five writes (an internal note, a
-  task, the ticket's filing, a link between tickets, an unpublished knowledge
-  article) — a registry fourteen other plugins add to (glpi-change alone contributes seven), and an MCP client for
+- **Tool calling**, on all four vendors: twenty-nine native tools over GLPI's
+  own data — twenty-two reads and seven writes. The reads cover the *record*
+  (a ticket, a problem, a change, and what was said on it), the *promise*
+  (which SLA and OLA apply, what working time is left, what has already been
+  breached), the *customer* (who they are, what has been agreed with them,
+  which contracts cover what, and how much they raise), the *estate* (assets,
+  installed software and licence position, warranties, consumable stock) and
+  the *people* (who is in a group, whose diary is full, who was asked to
+  approve something, and whether the customer was actually emailed). The
+  writes are an internal note on a ticket or on a problem or change, a task,
+  the ticket's filing, a link between tickets, a machine attached to a ticket,
+  and an unpublished knowledge article. Around them is a registry eighteen
+  other plugins add to — sixty-odd more tools, from backup state and on-call
+  rotas to cloud drift, vulnerability exposure and post-incident actions — and an MCP client for
   connecting external servers, including **OAuth 2.1** discovered from the
   server's own URL with client-credentials or authorization-code grants —
   authenticating either as the instance or as **each technician's own account**,
   which each of them connects from *My settings → AI connections*. The
   writes are off until an administrator turns them on, none of them is
   customer-facing, and none of them deletes anything. Past eight registered
-  tools the model searches for them rather than being handed all of them.
+  tools the model searches for them rather than being handed all of them —
+  which is what keeps a hundred-tool instance sending about thirty schemas on
+  a request instead of all of them.
 - **Triage suggestions** on tickets that arrived as prose: a proposed category,
   urgency, impact and procedure, offered as chips above the ticket fields.
   Nothing is applied without a click, and every accept and dismiss is recorded —
@@ -284,6 +295,12 @@ node assistant-check.js
 - `glpi-ai/tests/browser/drafts-check.js` — the drafts tab and the strip inside GLPI's
   own solution editor. Its central assertion is that after clicking Insert the
   editor holds the draft and the ticket still has no solution on it.
+- `tests/discovery.php` — that every tool can be *found*. Almost everything
+  past the pinned handful is reached through `find_tools`, whose ranker is
+  word overlap with no synonyms and only the crudest stemming, so a tool whose
+  description does not contain the words people actually use is a tool nobody
+  will ever call. It asks the question a technician would ask and asserts the
+  right tool comes back.
 - `tests/native-tools.php` — the deeper reads and the writes, driven through
   `ToolRegistry::execute()` rather than by calling the handlers, because for a
   write tool most of the interesting behaviour is not in the handler: the write

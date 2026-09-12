@@ -6,8 +6,11 @@
 #
 # adapters.php, tools-wire.php and streaming.php need nothing but PHP — they
 # assert on what the adapters send and on what they make of what comes back. integration.php, tools.php, triage.php,
-# drafts.php, reply.php, native-tools.php and assistant.php need the plugin to be active, and each restores the configuration and fixtures it
-# touches on the way out.
+# drafts.php, reply.php, native-tools.php, discovery.php and assistant.php need the plugin to be active, and each restores the configuration and fixtures it
+# touches on the way out. discovery.php touches nothing at all: it asks
+# find_tools the questions a technician would ask and checks the right tool
+# comes back, which is the only thing standing between an unpinned tool and
+# never being called.
 set -e
 
 cd "$(dirname "$0")/.."
@@ -28,6 +31,7 @@ php tests/tools-wire.php || status=1
 php tests/integration.php || status=1
 php tests/tools.php      || status=1
 php tests/native-tools.php || status=1
+php tests/discovery.php  || status=1
 php tests/triage.php     || status=1
 php tests/drafts.php     || status=1
 php tests/reply.php      || status=1
