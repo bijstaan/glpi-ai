@@ -389,6 +389,21 @@ the registry and the declared `Field`s, so none needs a per-vendor branch — wh
 is what stops the fifth vendor being a class plus three forgettable edits that
 each fail silently by not saving a field.
 
+## Independence
+
+We have never had a GLPI Network subscription. We have not seen the source of
+GLPI's "Exclusive" plugins, or their screens, or their docs. Nothing in here
+came from them.
+
+It was built from GLPI's own source, which is GPL and public, and from its API.
+That is the whole list.
+
+If it looks like theirs in places, that is because core only gives you so many
+places to hook into.
+
+GLPI is a trademark of Teclib'. This plugin is not affiliated with Teclib' or
+the GLPI project.
+
 ## Licence
 
 GPL-3.0-or-later, the same licence as GLPI. The plugin is loaded into GLPI's
