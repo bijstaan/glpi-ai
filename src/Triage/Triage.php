@@ -32,7 +32,7 @@ use Toolbox;
  * The other deliberate shape is *when* it runs. Triage is queued at creation
  * and executed by cron, not inline. A provider round trip inside the request
  * that created the ticket would put a vendor's latency in front of whoever
- * pressed submit — for portal tickets, that is a customer — and would make the
+ * pressed submit — for portal tickets, that is a requester — and would make the
  * mail collector's runtime depend on an external API.
  */
 final class Triage

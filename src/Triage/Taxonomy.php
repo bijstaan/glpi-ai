@@ -23,7 +23,7 @@ use Ticket;
  * It is also the allowlist. Nothing the model returns is trusted; a category id
  * is accepted only if it came from here, which means a hallucinated id fails
  * closed as "no suggestion" rather than writing a category that does not exist
- * — or, worse, one from another customer's tree.
+ * — or, worse, one from another entity's tree.
  */
 final class Taxonomy
 {
@@ -37,7 +37,7 @@ final class Taxonomy
      * Categories and procedures, for one entity.
      *
      * The entity's own name is deliberately not in here. It would be one more
-     * customer identifier travelling to a vendor for no gain — the ticket text
+     * entity identifier travelling to a vendor for no gain — the ticket text
      * already carries whatever context the model needs, and this string is sent
      * with every single call.
      *
@@ -65,8 +65,8 @@ final class Taxonomy
      *
      * Scoped with GLPI's own recursion rule — an entity sees its own categories
      * plus the recursive ones above it — rather than a flat "everything". Two
-     * customers under one instance have separate taxonomies, and a model
-     * offered the union would confidently file one customer's ticket under
+     * entities under one instance have separate taxonomies, and a model
+     * offered the union would confidently file one entity's ticket under
      * another's category.
      *
      * @return array<int,array{id:int,name:string,comment:string}>
@@ -145,9 +145,9 @@ final class Taxonomy
         $taxonomy = self::forEntity($entities_id);
 
         $lines = [
-            'You are triaging an IT support ticket for a managed service provider.',
+            'You are triaging an IT support ticket.',
             'Your suggestions are shown to a technician as chips they may accept or dismiss.',
-            'You never change the ticket yourself and you never write anything a customer sees.',
+            'You never change the ticket yourself and you never write anything a requester sees.',
             '',
             'Choose a category from this list, by id. These are the only valid ids:',
         ];

@@ -18,7 +18,7 @@ use Ticket;
 /**
  * Two more writes, held to the same line as the first four.
  *
- * The rule in {@see WriteTicket} is the rule here: nothing customer-facing,
+ * The rule in {@see WriteTicket} is the rule here: nothing requester-facing,
  * nothing that changes status or assignment, nothing deleted, and everything
  * behind the administrator's write switch and a right above READ. What is
  * added is the same class of work — the recording a technician does after

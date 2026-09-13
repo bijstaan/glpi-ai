@@ -9,7 +9,7 @@
  *
  * Central interface only. Every AI feature in this plugin is technician-facing
  * by design, and an assistant reachable from the helpdesk portal would be a
- * model talking to a customer — the one thing the roadmap rules out.
+ * model talking to a requester — the one thing the roadmap rules out.
  *
  * Thread access is by ownership rather than by right, checked in
  * Thread::mine(). A conversation is one person's working notes: half-formed

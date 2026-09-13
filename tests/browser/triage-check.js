@@ -49,7 +49,7 @@ const chip = (page, field) => page.locator(`[data-glpiai-chip="${field}"]`);
   // real host; a test run is not allowed to cost it. See config-guard.js.
   const saved = guard.snapshot();
 
-  // A customer entity with its own taxonomy, and a ticket that reads like one
+  // An entity with its own taxonomy, and a ticket that reads like one
   // somebody emailed in.
   const fixtures = JSON.parse(php(`
     Config::setConfigurationValues("plugin:glpiai", [

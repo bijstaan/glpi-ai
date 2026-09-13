@@ -18,7 +18,7 @@ use GlpiPlugin\Glpiai\Provider\Registry;
  *
  * **Secrets are encrypted at rest** with GLPI's own key, the same way core
  * stores the SMTP password. A provider key sitting in a config table in
- * plaintext is a key in every database backup, and MSP backups travel.
+ * plaintext is a key in every database backup, and backups travel.
  *
  * The encryption itself is core's, not ours: {@see secretKeys()} is declared
  * through the SECURED_CONFIGS hook, and Config::setConfigurationValues() then
@@ -29,8 +29,8 @@ use GlpiPlugin\Glpiai\Provider\Registry;
  * ours to do: core encrypts on write but hands back the ciphertext on read.
  *
  * **The entity gate is a first-class setting, not a feature flag.** This plugin
- * sends client data to a third party under contracts we did not write, and some
- * clients will forbid that outright. Expressing "which tenants may this touch"
+ * sends ticket data to a third party under terms we did not write, and some
+ * organisations will forbid that outright. Expressing "which tenants may this touch"
  * as configuration from the first commit is much easier than retrofitting it
  * once three features already call the provider directly.
  */
@@ -107,9 +107,9 @@ final class Settings
 
         // ---------------------------------------------------------- reply review
 
-        // Reading a reply a technician wrote to a customer, before they send
+        // Reading a reply a technician wrote to a requester, before they send
         // it. Off separately, and this is the switch that most deserves to be:
-        // it is the only feature here that touches customer-facing text at
+        // it is the only feature here that touches requester-facing text at
         // all, and to spot internal content leaking into a reply it has to be
         // given the internal notes to compare against — the most sensitive
         // thing this plugin sends anywhere. It still never writes the reply.
@@ -143,9 +143,9 @@ final class Settings
         // House instructions, appended to the assistant's own system prompt.
         //
         // The shipped prompt is about how to use tools well and is not the
-        // place for anything site-specific — which customer names mean what,
-        // which of two spellings of a supplier is right, that this MSP never
-        // reboots a server without asking. Those belong to the instance, and
+        // place for anything site-specific — which organisation names mean
+        // what, which of two spellings of a supplier is right, that a server is
+        // never rebooted here without asking. Those belong to the instance, and
         // an administrator should not have to edit a PHP file to say them.
         //
         // Appended rather than replacing: the shipped instruction is what makes
@@ -408,8 +408,8 @@ final class Settings
      * somebody not having thought about it yet.
      *
      * The check is on the entity tree: permitting a parent permits the entities
-     * beneath it, which is how an MSP actually thinks about a customer that has
-     * sub-entities per site.
+     * beneath it, which is how anyone actually thinks about an organisation
+     * that has sub-entities per site.
      */
     public static function entityAllowed(int $entities_id): bool
     {

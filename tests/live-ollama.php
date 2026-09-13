@@ -335,7 +335,7 @@ check('the article has a title of its own',
     (string) $article['title']);
 
 // The one thing an article must not do. Reported rather than asserted: a small
-// model leaking a customer name is a fact worth seeing, and failing the build
+// model leaking an entity name is a fact worth seeing, and failing the build
 // on it would make this suite a measure of the model rather than the plugin.
 $leaks = [];
 foreach (['glpiai-live', 'finance team'] as $needle) {
@@ -343,7 +343,7 @@ foreach (['glpiai-live', 'finance team'] as $needle) {
         $leaks[] = $needle;
     }
 }
-echo '        customer details carried into the article: '
+echo '        entity details carried into the article: '
    . ($leaks === [] ? 'none' : implode(', ', $leaks)) . "\n";
 
 $kb_error = null;

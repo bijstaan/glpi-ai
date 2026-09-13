@@ -18,7 +18,7 @@
  * quietest possible failure. There are also checks that it draws nothing for a
  * requester, nothing on a followup that has already been sent, and no
  * `<button>` without `type="button"` — inside the reply form a bare button
- * submits it, which here means posting an unfinished reply to a customer.
+ * submits it, which here means posting an unfinished reply to a requester.
  *
  * **What survives.** A flag whose quote is not in the reply is discarded. The
  * mock provider is built to make that checkable: it answers by comparing the

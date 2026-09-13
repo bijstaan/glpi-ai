@@ -71,7 +71,7 @@ $prompt->timeout = 30;
 try {
     // completeAsAdmin() rather than complete(): the entity gate would otherwise
     // make the settings page untestable until an allowlist happened to be
-    // filled in, and this prompt carries no customer data to gate.
+    // filled in, and this prompt carries no entity data to gate.
     $completion = Client::completeAsAdmin($prompt, $provider);
 } catch (AiException $e) {
     $respond([

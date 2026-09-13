@@ -307,7 +307,7 @@ check('inline code is rendered', str_contains($rendered, '<code>site link costs<
 check('bullet lists survive', str_contains($rendered, '<ul>') && str_contains($rendered, '<li>'));
 check('so do numbered ones', str_contains($rendered, '<ol>'));
 
-// The part that must never regress. This is model output about customer data,
+// The part that must never regress. This is model output about entity data,
 // and it is put into the DOM directly — so raw HTML has to come back escaped
 // and an unsafe scheme has to lose its href.
 $hostile = GlpiPlugin\Glpiai\Markdown::toHtml(

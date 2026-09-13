@@ -9,9 +9,9 @@ namespace GlpiPlugin\Glpiai;
 /**
  * What the model went looking for, and on whose behalf.
  *
- * The usage log answers "what did this cost". This answers a different and, for
- * an MSP, more awkward question: a client asks what an AI feature touched on
- * their tenant, and the honest answer has to come from a record made at the
+ * The usage log answers "what did this cost". This answers a different and more
+ * awkward question: somebody asks what an AI feature touched on
+ * their entity, and the honest answer has to come from a record made at the
  * time. "It can only see what the technician could see" is true and is not an
  * answer.
  *

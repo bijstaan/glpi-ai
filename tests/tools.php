@@ -12,7 +12,7 @@
  * GLPI is everything that decides whether a call is *allowed* — the rights, the
  * entity scoping, the write switch — and the loop that ties them together. Those
  * are the parts where a mistake does not produce an error; it produces a model
- * that can read a client's tickets from another client's conversation.
+ * that can read one entity's tickets from another entity's conversation.
  *
  * Restores the configuration and purges the fixtures it creates.
  *

@@ -7,7 +7,7 @@
 namespace GlpiPlugin\Glpiai;
 
 use GlpiPlugin\Glpiai\Mcp\Catalogue;
-use GlpiPlugin\Glpiai\Tools\Customer;
+use GlpiPlugin\Glpiai\Tools\Organisation;
 use GlpiPlugin\Glpiai\Tools\Estate;
 use GlpiPlugin\Glpiai\Tools\FindAsset;
 use GlpiPlugin\Glpiai\Tools\History;
@@ -95,7 +95,7 @@ final class ToolRegistry
      * anything, and they now cover the four things GLPI knows that no page
      * puts in one place: the *record* (a ticket, a problem, a change, and what
      * was actually said on it), the *promise* (which service level applies,
-     * what is left of it, what has already gone), the *customer* (who they
+     * what is left of it, what has already gone), the *entity* (who they
      * are, what has been agreed with them, what they have and what it is
      * costing them), and the *people* (who is in a group, whose diary is
      * already full, who was asked to approve something and has not answered).
@@ -111,7 +111,7 @@ final class ToolRegistry
      * none: what shipped is the work a technician does twenty times a day and
      * resents — write down what was found, log the time, fix the filing, link
      * the duplicates, attach the machine, save the article — with the
-     * customer-facing and irreversible parts deliberately absent. A note is
+     * requester-facing and irreversible parts deliberately absent. A note is
      * always private, no tool changes status or assignment, nothing is
      * deleted, nothing is unlinked, and every one of them needs the
      * administrator's write-tools switch before it exists at all. See
@@ -146,7 +146,7 @@ final class ToolRegistry
             Network::trace(),
             Network::ports(),
             WriteKnowledge::tool(),
-        ], Customer::tools(), Estate::tools(), Team::tools(), Workflow::tools(), WriteItil::tools(), WriteTicket::tools());
+        ], Organisation::tools(), Estate::tools(), Team::tools(), Workflow::tools(), WriteItil::tools(), WriteTicket::tools());
     }
 
     /**

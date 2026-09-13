@@ -35,7 +35,7 @@ use GlpiPlugin\Glpiai\ToolRegistry;
  *
  * Technician-facing, like everything else here. There is no path from this to a
  * requester: the panel renders only in the central interface, and nothing it
- * produces is written anywhere a customer reads.
+ * produces is written anywhere a requester reads.
  */
 final class Assistant
 {
@@ -218,9 +218,9 @@ final class Assistant
     private static function instruction(?\CommonDBTM $item, string $question = ''): string
     {
         $lines = [
-            'You are HEIMDALL, helping an IT technician at a managed service provider',
-            'troubleshoot. You are talking to the technician, never to their customer. Nothing',
-            'you write is shown to a requester.',
+            'You are HEIMDALL, helping an IT technician troubleshoot. You are talking to',
+            'the technician, never to the person who raised the ticket. Nothing you write is',
+            'shown to a requester.',
             '',
             'Your name stands for Helpdesk Endpoint Inspection, Monitoring, Diagnostics And',
             'Live Lookup. Do not introduce yourself or mention it unless you are asked — and if',
@@ -244,7 +244,7 @@ final class Assistant
             '    something you are recalling as something you checked.',
             '  - Do not repeat a query you have already run. If you need something a tool cannot',
             '    give you, say what you would need and let the technician get it.',
-            '  - Live queries reach real machines belonging to a customer. Ask one when it will',
+            '  - Live queries reach real machines belonging to an entity. Ask one when it will',
             '    answer the question; do not sweep a fleet to see what turns up.',
             '  - Be brief. A technician reading this is mid-problem. Short paragraphs, no',
             '    preamble, no summary of what you are about to do.',

@@ -148,7 +148,7 @@ function plugin_glpiai_install()
                 `date_creation` TIMESTAMP NULL DEFAULT NULL,
                 `date_mod` TIMESTAMP NULL DEFAULT NULL,
                 PRIMARY KEY (`id`),
-                -- Unique per entity, not globally: two clients may each have a
+                -- Unique per entity, not globally: two entities may each have a
                 -- server they both call Monitoring, and they are not the same
                 -- server.
                 UNIQUE KEY `name` (`entities_id`,`name`),
@@ -334,7 +334,7 @@ function plugin_glpiai_install()
         // A fingerprint of the text rather than the text: the reply itself
         // lands on the ticket where anybody entitled to read it will find it,
         // and a second copy in a plugin's audit table is one nobody would
-        // think to look for when a customer asks what was written about them.
+        // think to look for when a requester asks what was written about them.
         $DB->doQuery(
             "CREATE TABLE `" . Review::TABLE . "` (
                 `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -601,7 +601,7 @@ function plugin_glpiai_user_purge(CommonDBTM $item)
  *
  * Nothing renders in the helpdesk interface. Every AI feature in this plugin is
  * technician-facing by design, and a suggestion chip on a requester's own
- * ticket would put a model's opinion in front of a customer — which is the one
+ * ticket would put a model's opinion in front of a requester — which is the one
  * thing the roadmap rules out.
  *
  * Seeing the panel takes no right beyond seeing the ticket, and deliberately

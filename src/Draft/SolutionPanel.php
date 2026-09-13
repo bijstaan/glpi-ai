@@ -19,7 +19,7 @@ use Ticket;
  * This is where the placement decision for this feature actually lands. The
  * alternatives were to prefill the solution field, or to leave the draft in its
  * tab and make people copy and paste. Prefilling puts generated prose one Save
- * away from a customer-visible field on a form the technician did not ask to be
+ * away from a requester-visible field on a form the technician did not ask to be
  * written for them; copy and paste is safe and tedious enough that people stop
  * bothering.
  *

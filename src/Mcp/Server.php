@@ -17,8 +17,8 @@ use Html;
  * One configured MCP server.
  *
  * A GLPI item rather than a block of settings, because these are per-entity by
- * nature: an MSP that connects its own monitoring server for one client and a
- * different one for another needs those to be separate records with separate
+ * nature: connecting one monitoring server for one entity and a different one
+ * for another needs those to be separate records with separate
  * credentials, not a list in a config field. Being an item also means the
  * entity restriction, the history, and the rights all come from GLPI.
  *

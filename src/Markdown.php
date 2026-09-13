@@ -23,7 +23,7 @@ use League\CommonMark\Exception\CommonMarkException;
  * whole point:
  *
  *   - **`html_input: escape`** — raw HTML in the source is escaped, not passed
- *     through. This is model output about customer data and it must never be
+ *     through. This is model output about entity data and it must never be
  *     parsed as markup, whatever ended up in it.
  *   - **`allow_unsafe_links: false`** — a `javascript:` href is dropped and the
  *     link renders without one.

@@ -15,7 +15,7 @@ use Session;
  * Two kinds, and they are genuinely different jobs rather than one feature with
  * a flag. A **solution** is about this ticket: what was wrong here, what fixed
  * it, addressed to whoever reads this ticket next. An **article** is about the
- * class of problem: it must generalise, drop the customer, and be useful to
+ * class of problem: it must generalise, drop the entity, and be useful to
  * somebody who has never seen this ticket. A model told to do both at once does
  * neither, so they are separate rows, separate prompts and separate schemas.
  *

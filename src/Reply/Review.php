@@ -31,7 +31,7 @@ use Session;
  * this table says that a reply changed, never what it said. The reply is
  * already on the ticket for anybody entitled to read it, and a second copy
  * living in a plugin's audit table is one nobody would think to look for when
- * a customer asks what was written about them.
+ * a requester asks what was written about them.
  */
 final class Review
 {
@@ -108,7 +108,7 @@ final class Review
      * from being closed by today's reply.
      *
      * Never throws and never blocks the followup. This is a measurement, and a
-     * measurement that can stop a technician answering a customer is a
+     * measurement that can stop a technician answering a requester is a
      * measurement that has to be removed.
      */
     public static function observeSend(ITILFollowup $followup): void
@@ -159,7 +159,7 @@ final class Review
             ], ['id' => (int) $row['id']]);
         } catch (\Throwable) {
             // Deliberately silent. See the docblock: nothing about counting
-            // this may interfere with somebody answering a customer.
+            // this may interfere with somebody answering a requester.
         }
     }
 

@@ -15,31 +15,31 @@ use GlpiPlugin\Glpiai\ToolException;
 use Ticket;
 
 /**
- * Who the customer is, and what has been agreed with them.
+ * Who an entity is, and what has been agreed with them.
  *
- * On an MSP install the entity *is* the customer, and until now nothing here
- * could read one. A model could list a customer's tickets and read their
+ * A GLPI entity is the organisation a ticket belongs to, and until now nothing
+ * here could read one. A model could list an entity's tickets and read their
  * machines and had no way to answer "who are they", "how big are they", "how
  * much do they raise", or the question underneath most escalations — "what
  * did we actually promise them".
  *
  * Two tools rather than one because they are asked at different moments.
  * `read_entity` is context, reached for once at the start of a conversation
- * about a customer. `read_contract` is evidence, reached for when somebody is
+ * about an entity. `read_contract` is evidence, reached for when somebody is
  * about to agree to work, quote for it, or explain why something is not
- * covered — and it has to be readable for an asset as well as for a customer,
+ * covered — and it has to be readable for an asset as well as for an entity,
  * because "is this laptop under warranty support" is a question about a
  * contract nobody can name.
  *
  * Neither tool declares a profile right for the entity itself: GLPI gates an
  * entity on `haveAccessToEntity()` rather than on a profile bit, and requiring
- * the `entity` right — an administrator's right — would have made a customer
+ * the `entity` right — an administrator's right — would have made an entity
  * summary unreadable by every technician who needed it. What each *part* of
  * the summary needs is asked for separately, which is why the ticket figures
  * disappear for a profile that may not list tickets rather than being counted
  * anyway.
  */
-final class Customer
+final class Organisation
 {
     /** @return Tool[] */
     public static function tools(): array
@@ -53,12 +53,12 @@ final class Customer
     {
         return new Tool(
             name: 'read_entity',
-            description: 'Read a customer — a GLPI entity: its full name and place in the tree, '
-                . 'its address and contact details, how many tickets it has open and raised '
-                . 'recently, what it has in the way of assets, and which contracts cover it with '
-                . 'the next one to expire. Use it at the start of a conversation about a '
-                . 'customer, or whenever you need to know who a ticket\'s entity actually is '
-                . 'rather than just its name.',
+            description: 'Read a GLPI entity — the organisation a ticket belongs to: its full '
+                . 'name and place in the tree, its address and contact details, how many tickets '
+                . 'it has open and raised recently, what it has in the way of assets, and which '
+                . 'contracts cover it with the next one to expire. Use it at the start of a '
+                . 'conversation about an entity, or whenever you need to know who a ticket\'s '
+                . 'entity actually is rather than just its name.',
             schema: [
                 'type'       => 'object',
                 'properties' => [
@@ -284,12 +284,12 @@ final class Customer
     {
         return new Tool(
             name: 'read_contract',
-            description: 'The contracts in force: what a customer has bought, or what covers one '
+            description: 'The contracts in force: what an entity has bought, or what covers one '
                 . 'particular asset. Returns each contract\'s type, number, start and end date, '
                 . 'notice period, whether it renews on its own, the hours of cover it buys, and '
                 . 'how close it is to expiry. Use it before agreeing to work that might be '
                 . 'chargeable, before promising out-of-hours attendance, when asked whether a '
-                . 'machine is still under support, and when asked what a customer is entitled '
+                . 'machine is still under support, and when asked what an entity is entitled '
                 . 'to.',
             schema: [
                 'type'       => 'object',
@@ -300,7 +300,7 @@ final class Customer
                     ],
                     'entities_id'  => [
                         'type'        => 'integer',
-                        'description' => 'Every contract for this customer. Defaults to the '
+                        'description' => 'Every contract for this entity. Defaults to the '
                             . 'conversation\'s entity when nothing else is given.',
                     ],
                     'itemtype'     => [
@@ -516,15 +516,15 @@ final class Customer
      * recursive ones.
      *
      * The three-way criterion is the whole of it, and the middle branch is the
-     * one that is easy to leave out: an MSP files the support contract on the
-     * customer and the customer has an entity per site, so a contract that
-     * covers a site sits on the parent with `is_recursive` set. Matching on
+     * one that is easy to leave out: the support contract is filed on the
+     * organisation and the organisation has an entity per site, so a contract
+     * that covers a site sits on the parent with `is_recursive` set. Matching on
      * `entities_id` alone finds nothing for every branch office in the estate.
      *
      * Narrowed in SQL rather than by reading the table and filtering in PHP.
      * The rights check below still runs per row — it is what actually decides
      * — but a tool that loaded every contract on the instance to answer a
-     * question about one customer would get slower with every year the
+     * question about one entity would get slower with every year the
      * business trades.
      *
      * @return array<int,array<string,mixed>>

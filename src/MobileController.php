@@ -662,7 +662,7 @@ final class MobileController extends AbstractController
         }
 
         // Every AI feature in this plugin is technician-facing by design; a
-        // requester reaching one would be a model talking to a customer.
+        // requester reaching one would be a model talking to a requester.
         if (Session::getCurrentInterface() !== 'central') {
             return new JSONResponse(['error' => 'forbidden'], 403);
         }

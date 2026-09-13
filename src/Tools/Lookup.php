@@ -88,8 +88,8 @@ final class Lookup
                 'link'       => 'AND',
                 'field'      => self::ENTITY_FIELD,
                 // "under" rather than "equals": permitting an entity means its
-                // sub-entities too, which is how an MSP models a client with a
-                // site per office.
+                // sub-entities too, which is how you model an organisation
+                // with a site per office.
                 'searchtype' => 'under',
                 'value'      => $context->entities_id,
             ];
@@ -166,8 +166,8 @@ final class Lookup
      * Its own helper because entity 0 is a real entity — the root, which on a
      * single-tenant install is *every* record. The obvious `$id > 0` guard that
      * every other dropdown here uses drops it, so a ticket in the root entity
-     * came back with no entity at all, which on an MSP install reads as "not
-     * this customer" rather than as "the shared one".
+     * came back with no entity at all, which on a multi-entity install reads
+     * as "not this organisation" rather than as "the shared one".
      */
     public static function entityName(int $entities_id): ?string
     {

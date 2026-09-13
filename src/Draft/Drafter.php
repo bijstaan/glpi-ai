@@ -168,14 +168,14 @@ final class Drafter
      * Written as two genuinely different jobs rather than one with a switch,
      * because they are. The rules that matter are the negative ones: a solution
      * must not claim something was done that the evidence only suggests, and an
-     * article must not carry this customer's names, addresses or internal notes
+     * article must not carry this entity's names, addresses or internal notes
      * out of the ticket it came from.
      */
     private static function instruction(string $kind, int $entities_id): string
     {
         $shared = [
-            'You are helping an IT technician at a managed service provider write up a ticket',
-            'that has been worked on. You are given the evidence from the ticket itself: what was',
+            'You are helping an IT technician write up a ticket that has been worked on.',
+            'You are given the evidence from the ticket itself: what was',
             'reported, what people wrote afterwards, and what checks a documented procedure',
             'recorded.',
             '',
@@ -194,7 +194,7 @@ final class Drafter
             return implode("\n", array_merge($shared, [
                 'Write the SOLUTION for this ticket: what the problem turned out to be, and what',
                 'was done about it. It is read by whoever opens this ticket next, including the',
-                'person who raised it, so it is about this ticket and this customer.',
+                'person who raised it, so it is about this ticket and this entity.',
                 '',
                 '  - Two or three short paragraphs at most.',
                 '  - Say what was wrong before saying what was done.',
@@ -213,13 +213,13 @@ final class Drafter
             'else entirely.',
             '',
             '  - Generalise. The article is about the fault, not about this occurrence of it.',
-            '  - Remove every detail that belongs to this occurrence: the customer, their people,',
+            '  - Remove every detail that belongs to this occurrence: the entity, their people,',
             '    their departments and team names, hostnames, addresses, times of day, ticket',
             '    numbers, and how many machines were affected. Say "users" and "a site", not',
             '    "the finance team" and "the branch office". If a detail cannot be generalised,',
             '    leave it out rather than anonymising it badly.',
             '  - Before you finish, reread what you wrote and take out anything that would tell a',
-            '    reader which customer this came from.',
+            '    reader which entity this came from.',
             '  - Anything marked INTERNAL in the evidence is a note between colleagues. Use what',
             '    it taught you; never carry its wording across.',
             '  - Structure: the symptom as someone would report it, then what causes it, then',
@@ -316,7 +316,7 @@ final class Drafter
      * readable only by its author. That is the entire safety mechanism for this
      * half of the feature and it is deliberately not configurable: an option to
      * publish on creation would be one checkbox between a model's prose and a
-     * customer-facing knowledge base, and somebody would tick it.
+     * requester-facing knowledge base, and somebody would tick it.
      *
      * @return int the new article's id, or 0 with $error set
      */

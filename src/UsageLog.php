@@ -14,8 +14,8 @@ namespace GlpiPlugin\Glpiai;
  * model under us. That is unanswerable after the fact unless provider, model
  * and prompt fingerprint were written down at the time.
  *
- * It also makes cost visible per entity, which for an MSP is the difference
- * between "AI costs us something" and a line on a client's invoice.
+ * It also makes cost visible per entity, which is the difference between
+ * "AI costs us something" and knowing which part of the business it costs.
  *
  * Note the deliberate absence of a cost column. Token counts are not comparable
  * across providers — the same text tokenises differently on each — so a single

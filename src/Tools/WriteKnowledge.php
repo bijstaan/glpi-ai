@@ -29,7 +29,7 @@ use Ticket;
  *  - **The article is created unpublished.** No visibility rows, which in GLPI
  *    means only its author can see it until somebody publishes it. Not
  *    configurable, deliberately: an option to publish on creation would be one
- *    argument between a model's prose and a customer-facing knowledge base.
+ *    argument between a model's prose and a requester-facing knowledge base.
  *  - **It is linked to the ticket it came from** when there is one, so the
  *    article and the evidence behind it stay findable from each other. An
  *    article nobody can trace back is one nobody dares edit.
@@ -49,7 +49,7 @@ final class WriteKnowledge
                 . 'somebody reviews and publishes it — so say that rather than implying it is '
                 . 'live. Write it for a technician who has never seen this ticket: the symptom '
                 . 'as it would be reported, then the cause, then what to do. Leave this '
-                . 'customer\'s names, hostnames and ticket numbers out of it.',
+                . 'requester\'s names, hostnames and ticket numbers out of it.',
             schema: [
                 'type'       => 'object',
                 'properties' => [

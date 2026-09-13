@@ -21,18 +21,18 @@ use TicketTask;
  * do not break it — they are the technician's own instruction, typed at the
  * assistant instead of clicked in a form, recorded in the tool audit under
  * their name and gated on the rights they already hold. What the rule actually
- * forbids is *unattended* output and anything a customer reads, and that is
+ * forbids is *unattended* output and anything a requester reads, and that is
  * where the hard lines here are drawn:
  *
  *  - **A note is always private.** `add_ticket_note` cannot write a public
  *    followup, and there is no argument that would let it. A public followup is
- *    a reply to the customer, it leaves the building the moment it is saved,
- *    and the roadmap's one customer-facing feature is a model *reviewing* a
+ *    a reply to the requester, it leaves the building the moment it is saved,
+ *    and the roadmap's one requester-facing feature is a model *reviewing* a
  *    reply a person wrote. Making this configurable would put an auto-reply one
  *    checkbox away, and that checkbox would be ticked on some instance.
  *  - **Nothing here changes status.** Not solved, not closed, not pending. A
  *    status change fires notifications, stops SLA clocks and closes work the
- *    customer may not agree is finished, and none of that is recoverable by
+ *    requester may not agree is finished, and none of that is recoverable by
  *    editing a field back.
  *  - **Nothing here assigns.** Who owns a ticket depends on rota, skills and
  *    load, which is exactly the claim triage was cut back from making. It is
@@ -68,7 +68,7 @@ final class WriteTicket
                 . 'to technicians and never to the requester, and there is no way to make it '
                 . 'public. Use it when the technician asks you to write something down, or to '
                 . 'record the result of a diagnosis you have just run. Do not use it to answer '
-                . 'the customer.',
+                . 'the requester.',
             schema: [
                 'type'       => 'object',
                 'properties' => [

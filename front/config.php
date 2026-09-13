@@ -407,7 +407,7 @@ echo "<div id='glpiai-access' class='card mb-3'><div class='card-header'><h3 cla
 
 echo '<p class="text-muted">'
    . __s('This plugin sends ticket content to a third party. That is a contractual question '
-       . 'before it is a technical one, and some clients will forbid it outright — so it is a '
+       . 'before it is a technical one, and some organisations will forbid it outright — so it is a '
        . 'setting rather than an assumption. Permitting an entity permits the entities beneath it.', 'glpiai')
    . '</p>';
 
@@ -472,14 +472,14 @@ echo "<div class='form-text mb-3'>"
 echo "<div class='mb-3'>";
 echo "<label class='form-label'>" . __s('House instructions', 'glpiai') . '</label>';
 echo "<textarea class='form-control font-monospace' name='assistant_instructions' rows='6' "
-   . "placeholder='" . $e(__('e.g. Northwind and NW Ltd are the same customer. Never propose '
+   . "placeholder='" . $e(__('e.g. Northwind and NW Ltd are the same organisation. Never propose '
        . 'rebooting a server without saying so explicitly.', 'glpiai')) . "'>"
    . $e($cfg['assistant_instructions']) . '</textarea>';
 echo "<div class='form-text'>"
    . __s('Added to HEIMDALL\'s own instructions, not instead of them — the shipped prompt is what '
        . 'makes it look things up before answering rather than guessing, and replacing it would '
        . 'undo that. Put what is true about this instance here: which names mean the same '
-       . 'customer, what this MSP never does without asking, house style for a handover note. '
+       . 'organisation, what is never done here without asking, house style for a handover note. '
        . 'It is read on every request, so keep it to things that are always relevant; anything '
        . 'situational belongs in a skill — see the Skills button at the top of this card.',
          'glpiai')
@@ -765,7 +765,7 @@ echo "<div id='glpiai-reply' class='card mb-3'><div class='card-header'><h3 clas
    . __s('Reply review', 'glpiai') . '</h3></div><div class="card-body">';
 
 echo '<p class="text-muted">'
-   . __s('The one place a model here touches customer-facing text, and it touches it by '
+   . __s('The one place a model here touches requester-facing text, and it touches it by '
        . 'reading. A technician writing a reply can ask for a second read before sending: '
        . 'internal content that has been carried across, an unexplained term, no statement of '
        . 'what happens next, the wrong tone. It returns remarks, never a rewrite, and Save is '

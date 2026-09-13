@@ -256,7 +256,7 @@ function plugin_glpiai_mobile_capabilities(): array
     if (Session::getCurrentInterface() === 'central') {
         $entities_id = (int) Session::getActiveEntity();
         // Both halves of "may this happen here": the master switch, and the
-        // per-entity allowlist that decides whether this customer's data may
+        // per-entity allowlist that decides whether this entity's data may
         // leave the instance.
         $permitted = Settings::flag('enabled') && Settings::entityAllowed($entities_id);
 

@@ -144,7 +144,7 @@ final class SearchItil
             'results' => $found,
             'note'    => $found === []
                 ? 'No change or problem matches. That is not proof there is none — try the words '
-                  . 'an engineer would have used rather than the words the customer used.'
+                  . 'an engineer would have used rather than the words the requester used.'
                 : null,
         ];
     }

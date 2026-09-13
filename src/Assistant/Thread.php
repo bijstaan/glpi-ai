@@ -19,8 +19,8 @@ use Session;
  * Losing the thread on every navigation would make follow-up questions
  * impossible, which is most of what a conversation is.
  *
- * The second reason is that "what did the AI tell somebody" is a question an
- * MSP will eventually be asked, by a client or by itself. The usage log records
+ * The second reason is that "what did the AI tell somebody" is a question you
+ * will eventually be asked, by an entity or by yourself. The usage log records
  * that a call happened and the tool log records what it reached for; without
  * this, neither records what was actually said.
  *

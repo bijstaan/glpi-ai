@@ -12,7 +12,7 @@ namespace GlpiPlugin\Glpiai;
  * Kept as a record rather than discarded once the result is back on the
  * transcript, because "what did the model actually do" is a question that gets
  * asked after the fact — by a technician wondering where a suggestion came
- * from, and by whoever has to answer a client asking what an AI feature touched
+ * from, and by whoever has to answer somebody asking what an AI feature touched
  * on their tenant. Neither question can be answered from the conversation text.
  */
 final class ToolInvocation

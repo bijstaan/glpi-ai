@@ -91,20 +91,20 @@ register_shutdown_function(static function () use ($before, &$tickets, &$made): 
 });
 
 $entity   = new Entity();
-$customer = (int) $entity->add(['name' => 'glpiai-triage-co', 'entities_id' => 0]);
-$made[Entity::class] = [$customer];
+$entity_co = (int) $entity->add(['name' => 'glpiai-triage-co', 'entities_id' => 0]);
+$made[Entity::class] = [$entity_co];
 
 $category = new ITILCategory();
 $vpn = (int) $category->add([
     'name'        => 'Remote access',
     'comment'     => 'VPN, MFA and anything else about getting in from outside',
-    'entities_id' => $customer,
+    'entities_id' => $entity_co,
     'is_incident' => 1,
     'is_request'  => 1,
 ]);
 $printing = (int) $category->add([
     'name'        => 'Printing',
-    'entities_id' => $customer,
+    'entities_id' => $entity_co,
     'is_incident' => 1,
     'is_request'  => 1,
 ]);
@@ -140,10 +140,10 @@ Settings::saveProvider('openai', [
 Taxonomy::forget();
 
 /** Make a ticket without the create hook queueing it, so tests control the queue. */
-$makeTicket = static function (array $fields) use (&$tickets, $customer, $mail_type): int {
+$makeTicket = static function (array $fields) use (&$tickets, $entity_co, $mail_type): int {
     $ticket = new Ticket();
     $id = (int) $ticket->add($fields + [
-        'entities_id'     => $customer,
+        'entities_id'     => $entity_co,
         'requesttypes_id' => $mail_type,
         'urgency'         => 3,
         'impact'          => 3,
@@ -158,7 +158,7 @@ $makeTicket = static function (array $fields) use (&$tickets, $customer, $mail_t
 
 echo "\nWhat the model is offered\n";
 
-$instruction = Taxonomy::instruction($customer);
+$instruction = Taxonomy::instruction($entity_co);
 
 check('the entity\'s own categories are in the system instruction',
     str_contains($instruction, 'Remote access') && str_contains($instruction, 'Printing'));
@@ -170,14 +170,14 @@ check('the urgency scale is spelled out', str_contains($instruction, Ticket::get
 check('and the instruction says what 0 means',
     str_contains($instruction, 'Use 0 for a category'));
 
-check('a category from this entity is accepted', Taxonomy::hasCategory($customer, $vpn));
-check('one from another entity is not', !Taxonomy::hasCategory($customer, $elsewhere));
-check('and an invented id certainly is not', !Taxonomy::hasCategory($customer, 999999));
+check('a category from this entity is accepted', Taxonomy::hasCategory($entity_co, $vpn));
+check('one from another entity is not', !Taxonomy::hasCategory($entity_co, $elsewhere));
+check('and an invented id certainly is not', !Taxonomy::hasCategory($entity_co, 999999));
 
 // The prefix has to be byte-identical between tickets or a provider's prompt
 // cache never hits, which is the whole reason it is built separately.
 check('the instruction is stable across calls',
-    Taxonomy::instruction($customer) === $instruction);
+    Taxonomy::instruction($entity_co) === $instruction);
 
 // -------------------------------------------------------------- eligibility
 

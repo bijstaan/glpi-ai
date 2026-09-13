@@ -158,7 +158,7 @@ final class ReadAsset
     /**
      * Purchase, warranty and value, from the financial record.
      *
-     * Gated on the Infocom right of its own: an MSP's helpdesk profile can
+     * Gated on the Infocom right of its own: a helpdesk profile can
      * legitimately see a laptop and not what it cost. `Infocom::canView()` is
      * the same check the tab does, so a technician who cannot open that tab
      * does not get the numbers through here either.
@@ -193,7 +193,7 @@ final class ReadAsset
             'warranty_until'  => $expiry,
             // Stated rather than left to be worked out. A model doing date
             // arithmetic on a warranty is a model that will occasionally tell a
-            // customer their laptop is covered when it is not.
+            // a requester their laptop is covered when it is not.
             'in_warranty'     => $expiry !== '' ? ($expiry >= date('Y-m-d')) : null,
             'supplier'        => self::dropdown('Supplier', (int) ($fields['suppliers_id'] ?? 0)),
         ], static fn($v): bool => $v !== null && $v !== '' && $v !== 0);

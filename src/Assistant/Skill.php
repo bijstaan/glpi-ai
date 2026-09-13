@@ -16,8 +16,8 @@ use Html;
  *
  * House instructions (Settings: `assistant_instructions`) are read on every
  * request and are the place for what is always true. A skill is the other half:
- * a procedure that matters when it matters — how this MSP handles a suspected
- * ransomware call, what to check before escalating a VPN fault, the wording of
+ * a procedure that matters when it matters — how a suspected ransomware call
+ * is handled here, what to check before escalating a VPN fault, the wording of
  * a handover note. Putting those in the always-on prompt would work for one of
  * them and get steadily worse with each one added, because every line is read
  * on every request whether it is relevant or not, and a model given six

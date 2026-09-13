@@ -35,7 +35,7 @@ use Ticket;
  *    on a pending ticket is meaningless until somebody takes it off hold.
  *  - **Response and resolution are different promises.** Most breaches are of
  *    the response target, which is invisible on a ticket that has been
- *    replied to and is what the customer's report will count.
+ *    replied to and is what the entity's report will count.
  *  - **The OLA behind the SLA.** The internal target is usually tighter, and
  *    it is the one the technician is actually working to.
  */
@@ -294,7 +294,7 @@ final class ServiceLevel
         }
 
         // A target missed on a ticket that has since been solved. Still worth
-        // a sentence: it is what the customer's report will count, and a model
+        // a sentence: it is what the entity's report will count, and a model
         // told only "nothing outstanding" will say the ticket was fine.
         foreach (['response', 'resolution'] as $which) {
             if (!empty($out[$which]['breached']) && isset($out[$which]['missed_by'])) {

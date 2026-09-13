@@ -218,7 +218,7 @@
      *
      * Nothing here touches the reply. The result is rendered below the strip
      * and outside the form's own fields, and Save is never disabled — the
-     * moment a review can stop a technician answering a customer it stops
+     * moment a review can stop a technician answering a requester it stops
      * being a review and becomes an approval step.
      */
     function replies() {

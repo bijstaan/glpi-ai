@@ -28,7 +28,7 @@ use TicketValidation;
  * about themselves: what am I being asked to approve.
  *
  * **"Did they actually get the email?"** The second-most common escalation on
- * a helpdesk is a customer who says they were never told, against a
+ * a helpdesk is a requester who says they were never told, against a
  * technician who is certain they replied. GLPI knows: every notification is
  * queued, stamped when it is sent, and counted when it fails. Nothing in the
  * interface puts that on the ticket, so the answer has always been a guess by
@@ -36,7 +36,7 @@ use TicketValidation;
  *
  * Neither writes. Requesting an approval sends a person an email asking them
  * to make a decision, under the requester's name — that is squarely on the
- * customer-facing side of this plugin's line, and answering one on somebody's
+ * requester-facing side of this plugin's line, and answering one on somebody's
  * behalf is not something a model should ever be able to do.
  */
 final class Workflow
@@ -321,7 +321,7 @@ final class Workflow
             description: 'Whether GLPI actually emailed anybody about a ticket, change or '
                 . 'problem: which notifications were generated, to which address, when each was '
                 . 'sent, and which are still queued or have failed to send. Use it whenever '
-                . 'somebody says they were never told, before insisting that a customer was '
+                . 'somebody says they were never told, before insisting that a requester was '
                 . 'notified, and when a reply seems to have gone nowhere. It reports what GLPI '
                 . 'did with the message, not whether the person read it.',
             schema: [
@@ -433,7 +433,7 @@ final class Workflow
 
         if ($failed > 0) {
             return sprintf(
-                '%d message(s) have failed to send and are still in the queue. The customer has '
+                '%d message(s) have failed to send and are still in the queue. The requester has '
                 . 'not been told, whatever the ticket says.',
                 $failed
             );

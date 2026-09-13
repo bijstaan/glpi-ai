@@ -113,7 +113,7 @@ class Tab extends CommonGLPI
             : __s('Knowledge article', 'glpiai');
 
         $blurb = $kind === Draft::SOLUTION
-            ? __s('About this ticket and this customer. Whoever opens the ticket next reads it, '
+            ? __s('About this ticket and this entity. Whoever opens the ticket next reads it, '
                 . 'including the person who raised it.', 'glpiai')
             : __s('About the class of problem, for a technician who has never seen this ticket. '
                 . 'Created unpublished — only you can see it until somebody publishes it.', 'glpiai');

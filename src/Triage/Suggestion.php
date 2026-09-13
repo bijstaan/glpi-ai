@@ -57,7 +57,7 @@ final class Suggestion
      * Queue a ticket for triage.
      *
      * Deliberately does not call a provider. This runs inside the request that
-     * created the ticket — which, for anything from the customer portal, is a
+     * created the ticket — which, for anything from the self-service portal, is a
      * person waiting on a submit button — and a provider round trip there would
      * put a vendor's latency in front of a requester. The cron task picks it up
      * within minutes, and the panel offers to run it immediately for anyone who

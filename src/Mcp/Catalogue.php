@@ -131,7 +131,7 @@ final class Catalogue
      *
      * Explicitly by entity rather than through the session's active entities:
      * this runs on cron paths too, and a server list that fell back to
-     * "everything" without a session would offer one client's tools while
+     * "everything" without a session would offer one entity's tools while
      * working another's ticket.
      *
      * @return Server[]

@@ -28,15 +28,15 @@ Depends on nothing outside GLPI's own vendor tree.
   reads and 7 writes.
   - Reads cover the *record* (a ticket, problem or change and what was said on
     it), the *promise* (which SLA and OLA apply, working time left, what has
-    breached), the *customer* (who they are, what is agreed, which contracts
+    breached), the *entity* (who they are, what is agreed, which contracts
     cover what, how much they raise), the *estate* (assets, installed software
     and licence position, warranties, consumable stock) and the *people* (who is
     in a group, whose diary is full, who was asked to approve something, whether
-    the customer was actually emailed).
+    the requester was actually emailed).
   - Writes are an internal note on a ticket, problem or change; a task; the
     ticket's filing; a link between tickets; a machine attached to a ticket; and
     an unpublished knowledge article. They are off until an administrator turns
-    them on, none is customer-facing, and none deletes anything.
+    them on, none is requester-facing, and none deletes anything.
   - Around them is a registry 18 other plugins add to — some sixty more tools,
     from backup state and on-call rotas to cloud drift, vulnerability exposure
     and post-incident actions.
@@ -66,7 +66,7 @@ Depends on nothing outside GLPI's own vendor tree.
   word at a time, with a switch between keeping every step on screen and keeping
   only the one running. An answer that hits the output ceiling is carried on
   rather than cut off. Past conversations are listed and resume in place.
-- **Reply review** — the one place a model here touches customer-facing text, and
+- **Reply review** — the one place a model here touches requester-facing text, and
   it does so by reading. A technician can ask for a second read before sending:
   internal content carried across, an unexplained term, no statement of what
   happens next, the wrong tone. Remarks, never a rewrite; Save is never blocked.
@@ -77,8 +77,8 @@ Depends on nothing outside GLPI's own vendor tree.
 
 ## Scope
 
-- **It does not talk to a customer.** Every feature is technician-facing. The
-  one customer-adjacent case is a model *reviewing* a reply a human wrote, which
+- **It does not talk to a requester.** Every feature is technician-facing. The
+  one requester-adjacent case is a model *reviewing* a reply a human wrote, which
   returns remarks rather than text.
 - **It does not fall back between vendors.** One provider is active at a time. A
   fallback chain sounds like resilience and means a request can land at a vendor
@@ -113,12 +113,12 @@ switch. External MCP servers are connected under Setup → AI → MCP servers.
 
 ![The entity gate](docs/screenshots/ai-02-entity-gate.png)
 
-This plugin sends ticket content to a third party. For an MSP that is a
-contractual question before a technical one, and some clients forbid it outright,
-so it is configuration rather than an assumption.
+This plugin sends ticket content to a third party. That is a policy question
+before a technical one, and some organisations forbid it outright, so it is
+configuration rather than an assumption.
 
-Permitting an entity permits those beneath it, which is how an MSP thinks about a
-client with a sub-entity per site. An empty allowlist permits nothing, including
+Permitting an entity permits those beneath it, which is how you would model an
+organisation with a sub-entity per site. An empty allowlist permits nothing, including
 the root entity: the failure this guards against is precisely somebody not having
 considered the question yet.
 
@@ -162,7 +162,7 @@ and the summed cost.
 `Client::complete()` is the only door. It is where the master switch, the entity
 gate, the timeout ceiling and the usage record are enforced, once. A caller
 reaching past it into `Registry` would silently opt out of the entity policy, and
-nobody would notice until a client asked.
+nobody would notice until somebody asked.
 
 ### The two model tiers
 
@@ -218,7 +218,7 @@ stringifying a body that does not exist yet.
 
 `/status` exists because the capability map cannot answer for it: that map is
 computed once per session, the entity gate is not a session property (the
-technician can switch entity in the app), and "may this customer's data reach a
+technician can switch entity in the app), and "may this entity's data reach a
 provider" is decided per entity.
 
 Feature discovery goes through `glpimobile_capabilities`

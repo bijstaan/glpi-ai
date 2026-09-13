@@ -33,7 +33,7 @@ use Session;
  *
  * Buttons are `type="button"` and carry no `name`, because this renders inside
  * the followup's own `<form>`: a bare `<button>` submits it, which here would
- * post an unfinished reply to a customer.
+ * post an unfinished reply to a requester.
  */
 final class Panel
 {
@@ -91,7 +91,7 @@ final class Panel
         echo "<div class='glpiai-reply-bar'>";
         echo "<i class='ti ti-eyeglass me-1'></i>";
         echo "<span class='glpiai-reply-label'>"
-           . __s('A second read before this goes to the customer — internal content, jargon, '
+           . __s('A second read before this goes to the requester — internal content, jargon, '
                . 'whether it says what happens next.', 'glpiai')
            . '</span>';
         echo "<button type='button' class='btn btn-sm btn-outline-secondary ms-auto' "

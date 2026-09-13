@@ -19,8 +19,8 @@ use Ticket;
  *
  * The single exception in this plugin's rule that nothing it produces reaches
  * a requester, and it is an exception because it inverts the risk rather than
- * accepting it. A model that writes to a customer is a reputational event
- * carried on a client's behalf the first time it is confidently wrong. A model
+ * accepting it. A model that writes to a requester is a reputational event
+ * carried on your behalf the first time it is confidently wrong. A model
  * that *reads* what a person wrote, before that person sends it, can only ever
  * cost them the ten seconds it takes to disagree with it.
  *
@@ -30,7 +30,7 @@ use Ticket;
  *    because offering one is how "review" becomes "write" over a fortnight of
  *    people clicking the easier button.
  *  - **It never blocks Save.** The reply belongs to the technician. A review
- *    that can stop a customer being answered is a review that will be switched
+ *    that can stop a requester being answered is a review that will be switched
  *    off the first busy afternoon, and rightly.
  *  - **It is asked to say nothing.** The failure mode that kills a reviewer is
  *    not missing a leak, it is flagging four things on a fine reply until
@@ -39,7 +39,7 @@ use Ticket;
  *
  * The four kinds it may raise are fixed and deliberately narrow: internal
  * content carried across, unexplained jargon, no statement of what happens
- * next, and the wrong tone for a customer. It is *not* asked whether the reply
+ * next, and the wrong tone for a requester. It is *not* asked whether the reply
  * is factually right — that is a claim about the work rather than about the
  * writing, the model cannot check it, and a confident "this is wrong" about
  * something a technician just did is the fastest way to lose their attention.
@@ -217,8 +217,8 @@ final class Reviewer
     private static function instruction(): string
     {
         return implode("\n", [
-            'A technician at a managed service provider has written a reply to a customer on a',
-            'support ticket and has not sent it yet. Read it and say whether anything in it needs',
+            'A technician has written a reply to the person who raised a support ticket and',
+            'has not sent it yet. Read it and say whether anything in it needs',
             'a second look before it goes.',
             '',
             'You are not writing this reply and you will not be asked to. Do not suggest wording,',
@@ -234,15 +234,15 @@ final class Reviewer
             '',
             '  - internal — something in the reply came from the internal notes and should not',
             '    leave the team: a colleague\'s aside, a supplier\'s failure, a candid word about',
-            '    the customer or their equipment, speculation about a cause nobody confirmed, or',
+            '    the requester or their equipment, speculation about a cause nobody confirmed, or',
             '    a phrase lifted from an internal note. This is the one worth being sensitive',
             '    about; the rest are courtesies.',
-            '  - jargon — a term, an abbreviation or a product name the customer has not used',
+            '  - jargon — a term, an abbreviation or a product name the requester has not used',
             '    themselves and would not be expected to know, left unexplained.',
-            '  - next_step — the reply leaves the customer without knowing what happens now: who',
+            '  - next_step — the reply leaves the requester without knowing what happens now: who',
             '    does what, by when, or what is needed from them. Flag this only where it is',
             '    genuinely missing, not where the answer is simply "nothing, it is fixed".',
-            '  - tone — wrong register for a customer: blaming them, brusqueness that will read',
+            '  - tone — wrong register for a requester: blaming them, brusqueness that will read',
             '    as annoyance, or promising something the ticket does not support.',
             '',
             'Do not flag spelling, grammar, punctuation, formatting, or brevity by itself. Do not',
@@ -277,7 +277,7 @@ final class Reviewer
             $evidence = Evidence::forTicket($item);
 
             $lines[] = '';
-            $lines[] = 'What the customer reported:';
+            $lines[] = 'What the requester reported:';
             $lines[] = mb_substr((string) $evidence['ticket']['reported'], 0, 1500);
 
             $internal = array_values(array_filter(
@@ -288,7 +288,7 @@ final class Reviewer
             if ($internal !== []) {
                 $lines[] = '';
                 $lines[] = 'INTERNAL notes on this ticket. These were written between colleagues '
-                         . 'and the customer has not seen them:';
+                         . 'and the requester has not seen them:';
                 foreach ($internal as $entry) {
                     $lines[] = '  - ' . mb_substr($entry['text'], 0, 600);
                 }

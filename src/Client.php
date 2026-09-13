@@ -18,7 +18,7 @@ use GlpiPlugin\Glpiai\Provider\StreamingProvider;
  * *every* AI call — the master switch, the tenant gate, the timeout, the usage
  * record — is enforced here, once. A feature that reached past this into
  * Registry would be a feature that silently opts out of the entity policy, and
- * nobody would notice until a client asked.
+ * nobody would notice until somebody asked.
  *
  * Two entry points: {@see complete()} for a single exchange, and {@see run()}
  * for one where the model may call tools. run() is a loop over complete(), so
@@ -295,7 +295,7 @@ final class Client
      * Run a prompt without the entity gate — for administrative calls only.
      *
      * The connection test needs this: it sends a fixed string of our own with
-     * no customer data in it, so gating it on a tenant policy would make the
+     * no entity data in it, so gating it on a tenant policy would make the
      * settings page untestable until an allowlist happened to be filled in.
      * Named to be conspicuous at the call site.
      *
@@ -366,7 +366,7 @@ final class Client
      * Write one tool call to the audit trail.
      *
      * Arguments are recorded but results are not. The argument list is the part
-     * that answers "what did the AI go looking for on this client's tenant",
+     * that answers "what did the AI go looking for in this entity",
      * which is the question that actually gets asked; results are ticket
      * content, and duplicating those into a second table is how a log becomes a
      * data-retention problem of its own.

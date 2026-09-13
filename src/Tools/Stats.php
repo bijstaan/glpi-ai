@@ -16,7 +16,7 @@ use Ticket;
  *
  * The gap this fills is not a reporting one. `search_tickets` returns at most
  * twenty-five rows, and every question of the form "how many tickets did this
- * customer raise last month", "which category is eating the week", "who is
+ * entity raise last month", "which category is eating the week", "who is
  * carrying the queue" was previously answered by a model counting the rows it
  * happened to be given — confidently, and wrong by however many rows the limit
  * cut off. A tool that returns a count is worth more here than one that
@@ -97,7 +97,7 @@ final class Stats
                     'entities_id' => [
                         'type'        => 'integer',
                         'description' => 'Count this entity and its children instead of the '
-                            . 'conversation\'s. Use read_entity or find the customer first.',
+                            . 'conversation\'s. Use read_entity or find the entity first.',
                     ],
                 ],
             ],

@@ -37,7 +37,7 @@
  * matters.
  *
  * The later sections cover the wider reads — the service-level clocks, the
- * counting, the customer, the estate and the people — and they are asserted
+ * counting, the entity, the estate and the people — and they are asserted
  * on the arithmetic rather than on the plumbing. Every one of those tools
  * exists because a model was previously doing the sum itself and getting it
  * wrong sometimes: counting rows a capped search returned, adding months to a
@@ -191,8 +191,8 @@ check('read_ticket answers', $read['ok'], $read['message']);
 check('it names the requester',
     str_contains(implode(',', $read['data']['requesters'] ?? []), 'Tester'),
     json_encode($read['data']['requesters'] ?? []));
-// The full path, which is what GLPI's own dropdown shows: on an MSP install
-// "Acme > Manchester" and "Globex > Manchester" are different places and the
+// The full path, which is what GLPI's own dropdown shows: on a multi-entity
+// install "Acme > Manchester" and "Globex > Manchester" are different places and the
 // leaf name alone does not say which.
 check('it names the entity, including a non-root one',
     str_contains((string) ($read['data']['entity'] ?? ''), 'glpiai-tools-co'),
@@ -236,7 +236,7 @@ check('and says so rather than returning nothing at all',
 
 // ---------------------------------------------------------- the wider reads
 
-echo "\nThe record, the promise, the customer, the estate and the people\n";
+echo "\nThe record, the promise, the entity, the estate and the people\n";
 
 $problem     = new Problem();
 $problems_id = (int) $problem->add([
@@ -293,13 +293,13 @@ check('and an unknown dimension is refused with the list of real ones',
     !$bad_dimension['ok'] && str_contains($bad_dimension['message'], 'category'),
     $bad_dimension['message']);
 
-$customer = $call('read_entity', ['entities_id' => $acme]);
-check('read_entity reads the customer', $customer['ok'], $customer['message']);
-check('it names them', ($customer['data']['name'] ?? '') === 'glpiai-tools-co');
+$entity_row = $call('read_entity', ['entities_id' => $acme]);
+check('read_entity reads the entity', $entity_row['ok'], $entity_row['message']);
+check('it names them', ($entity_row['data']['name'] ?? '') === 'glpiai-tools-co');
 check('and counts what they have',
-    ($customer['data']['tickets']['open_now'] ?? 0) >= 2
-    && ($customer['data']['assets']['Computers'] ?? 0) >= 1,
-    json_encode([$customer['data']['tickets'] ?? null, $customer['data']['assets'] ?? null]));
+    ($entity_row['data']['tickets']['open_now'] ?? 0) >= 2
+    && ($entity_row['data']['assets']['Computers'] ?? 0) >= 1,
+    json_encode([$entity_row['data']['tickets'] ?? null, $entity_row['data']['assets'] ?? null]));
 
 $contract    = new Contract();
 $contracts_id = (int) $contract->add([
@@ -314,7 +314,7 @@ $contracts_id = (int) $contract->add([
 $made[] = [Contract::class, $contracts_id];
 
 $contracts = $call('read_contract', ['entities_id' => $acme]);
-check('read_contract finds the customer\'s contract', $contracts['ok'], $contracts['message']);
+check('read_contract finds the entity\'s contract', $contracts['ok'], $contracts['message']);
 $first = $contracts['data']['contracts'][0] ?? [];
 check('it works out the end date from the duration',
     ($first['expires'] ?? '') === date('Y-m-d', strtotime(date('Y-m-d', strtotime('-2 months')) . ' +24 months')),
@@ -439,7 +439,7 @@ $mail = $call('notification_status', ['items_id' => $tickets_id]);
 check('notification_status answers', $mail['ok'], $mail['message']);
 // Creating the ticket queued its own notifications, which is the useful
 // fixture: every row must carry a state, because "GLPI generated a message"
-// and "the customer was told" are different claims and the state is the only
+// and "the requester was told" are different claims and the state is the only
 // thing separating them.
 check('every message carries a state',
     ($mail['data']['notifications'] ?? []) !== []
@@ -504,7 +504,7 @@ $rows = getAllDataFromTable(ITILFollowup::getTable(),
 $written = array_values($rows)[0] ?? [];
 check('exactly one followup exists', count($rows) === 1, (string) count($rows));
 // The assertion this tool exists to satisfy. A public followup is a reply to
-// the customer, and nothing here may write one.
+// the requester, and nothing here may write one.
 check('and it is PRIVATE', (int) ($written['is_private'] ?? 0) === 1);
 check('the paragraphs survived as HTML',
     substr_count((string) ($written['content'] ?? ''), '<p>') === 2,

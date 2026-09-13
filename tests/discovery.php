@@ -75,8 +75,8 @@ function check(string $name, bool $ok, string $detail = ''): void
 const QUESTIONS = [
     // The native reads.
     'how long have I got on this ticket'                  => 'sla_status',
-    'how many tickets did this customer raise last month' => 'ticket_stats',
-    'who is the customer and what is their address'       => 'read_entity',
+    'how many tickets did this entity raise last month' => 'ticket_stats',
+    'which entity is this and what is their address'       => 'read_entity',
     'is this machine still under warranty'                => 'asset_lifecycle',
     'what software is installed on this laptop'           => 'software_inventory',
     'is the work covered by a contract'                   => 'read_contract',
@@ -84,7 +84,7 @@ const QUESTIONS = [
     'who is in the network team'                          => 'read_group',
     'is the technician free on Thursday'                  => 'check_availability',
     'who has to approve this change'                      => 'read_validations',
-    'did the customer actually get the email'             => 'notification_status',
+    'did the requester actually get the email'             => 'notification_status',
     'read the backout plan of this change'                => 'read_itil',
     'what changed on this machine'                        => 'item_history',
 
@@ -104,20 +104,20 @@ const QUESTIONS = [
     'what is going out in this release'                   => 'change_releases',
     'what came out of the major incident review'          => 'major_actions',
     'how did we handle the outage timeline'               => 'major_timeline',
-    'is there planned maintenance for this customer'      => 'major_maintenance',
+    'is there planned maintenance for this entity'      => 'major_maintenance',
     'what recurring problems should we raise'             => 'kedb_candidates',
     'read the known error in full'                        => 'kedb_read',
     'is this project going to land on time'               => 'project_status',
     'what are the risks on this project'                  => 'project_raid',
     'who is over-booked over the next few weeks'          => 'project_workload',
-    'what did we send the customer in the report'         => 'service_reviews',
-    'how happy is the customer with the survey'           => 'satisfaction',
+    'what did we send this entity in the report'         => 'service_reviews',
+    'how happy is this entity with the survey'           => 'satisfaction',
     'which machines make up this business service'        => 'service_members',
     'is the network being scanned'                        => 'network_coverage',
-    'what identity provider does this customer use'       => 'identity_sources',
+    'what identity provider does this entity use'       => 'identity_sources',
     'what is on the improvement register'                 => 'improvement_board',
     'export this ticket as a pdf'                         => 'export_pdf',
-    'what happens if the client is out of contract'       => 'entitlement_policy',
+    'what happens if the entity is out of contract'       => 'entitlement_policy',
 ];
 
 $all   = ToolRegistry::all(0);
