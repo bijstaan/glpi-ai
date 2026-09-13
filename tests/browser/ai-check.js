@@ -18,6 +18,9 @@
 // glpi-ai/tests/mock-provider.php, which must be listening inside the GLPI
 // container. ai-setup.sh starts it.
 const { chromium } = require('playwright');
+const fs = require('fs');
+const path = require('path');
+const { openDark, audit } = require('./dark');
 const { fullPage } = require('./shot');
 const guard = require('./config-guard');
 
@@ -27,6 +30,7 @@ let saved = null;
 
 const BASE = 'http://localhost:8081';
 const SHOTS = process.env.SHOT_DIR || '.';
+const DARK_SHOTS = path.join(SHOTS, 'dark');
 const CONFIG = `${BASE}/plugins/glpiai/front/config.php`;
 
 // Where the mock listens, as seen from inside the container running GLPI.
@@ -63,6 +67,24 @@ const field = (page, provider, name) => page.locator(`[name="p[${provider}][${na
 
 const result = (page, provider) => page.locator(`[data-glpiai-result="${provider}"]`);
 
+/**
+ * Open every provider card.
+ *
+ * Each one is a <details>, and config.php renders only the *active* provider's
+ * as open. These checks reset the plugin first, so there is no active provider
+ * and every card is closed — leaving every field and every Test button in the
+ * DOM but not visible, which Playwright waits thirty seconds for and then gives
+ * up on. Called after each load of the settings page, including the reload a
+ * save leaves behind.
+ */
+async function openCards(page) {
+  await page.evaluate(() => {
+    document.querySelectorAll('details.card').forEach((card) => {
+      card.open = true;
+    });
+  });
+}
+
 /** Click a provider's Test connection button and wait for the verdict to land. */
 async function runTest(page, provider) {
   await page.click(`[data-glpiai-test="${provider}"]`);
@@ -82,6 +104,7 @@ async function runTest(page, provider) {
 async function save(page) {
   await page.click('button[name=update]');
   await page.waitForLoadState('networkidle');
+  await openCards(page);
 }
 
 (async () => {
@@ -105,6 +128,7 @@ async function save(page) {
   page.on('pageerror', (e) => jsErrors.push(e.message));
 
   await page.goto(CONFIG, { waitUntil: 'networkidle' });
+  await openCards(page);
 
   // ------------------------------------------------------------ as installed
 
@@ -216,6 +240,7 @@ async function save(page) {
   // ------------------------------------------------------------ tool calling
 
   await page.goto(CONFIG, { waitUntil: 'networkidle' });
+  await openCards(page);
   body = await page.evaluate(() => document.body.innerText);
 
   check('the tool-calling section lists the native tools',
@@ -291,6 +316,7 @@ async function save(page) {
   await fullPage(page, `${SHOTS}/ai-07-mcp-server.png`);
 
   await page.goto(CONFIG, { waitUntil: 'networkidle' });
+  await openCards(page);
   check('the MCP tools appear in the settings page inventory',
     /mcp__Browser_test_server__get_incident/.test(await page.evaluate(() => document.body.innerText)));
 
@@ -313,6 +339,31 @@ async function save(page) {
     (await page.locator('.dropdown-item[href*="plugins/glpiai/"]').count()) === 0);
 
   check('no JavaScript errors on the settings page', jsErrors.length === 0, jsErrors.join(' | '));
+
+
+  // --- The dark palette --------------------------------------------------
+  //
+  // The settings page is a column of provider cards this plugin draws itself,
+  // and the entity gate below them is the one panel whose background came from
+  // a Tabler variable rather than from a palette.
+  fs.mkdirSync(DARK_SHOTS, { recursive: true });
+  console.log('\nswitching to the dark palette...');
+
+  const dark = await openDark(browser, { plugin: 'glpiai' });
+
+  await dark.goto(CONFIG, { waitUntil: 'networkidle' });
+  await dark.evaluate(() => {
+    document.querySelectorAll('details.card').forEach((c) => { c.open = true; });
+  });
+  await dark.waitForTimeout(400);
+  const bad = await audit(dark, 'glpiai-');
+  check('[dark] settings: no near-white panel carrying dark-body text',
+    bad.whiteBg.length === 0, JSON.stringify(bad.whiteBg));
+  check('[dark] settings: muted text meets 4.5:1',
+    bad.lowContrast.length === 0, JSON.stringify(bad.lowContrast));
+  await fullPage(dark, `${DARK_SHOTS}/ai-dark-01-general.png`);
+
+  check('[dark] no page errors', dark.__darkErrors.length === 0, dark.__darkErrors.join(' | '));
 
   await browser.close();
   guard.restore(saved);

@@ -131,11 +131,30 @@ const ask = async (page, text) => {
   const computerUrl = `${BASE}/front/computer.form.php?id=${fixtures.computer}`;
 
   try {
-    // --- 1. Off until switched on -------------------------------------
+    // --- 1. Off means absent, not present-and-refusing -----------------
+    //
+    // This used to assert that the launcher was on the page with the feature
+    // off and said so when pressed. setup.php now withholds assistant.js
+    // entirely unless Assistant::available() — the argument is written out
+    // there: a control that is visible and refuses reads as broken rather than
+    // as switched off, and there is nothing on screen to say which. So the
+    // assertion is the opposite one, and it is the one worth making: with the
+    // feature off, nothing of the assistant reaches the page at all.
     await page.goto(ticketUrl, { waitUntil: 'networkidle' });
     await page.waitForTimeout(600);
 
-    check('the launcher is present on every page',
+    check('with the feature off, no launcher is shipped at all',
+      await page.locator('.glpiai-assistant-launch').count() === 0);
+    check('and no assistant panel either',
+      await page.locator('.glpiai-assistant').count() === 0);
+
+    php(`GlpiPlugin\\Glpiai\\Settings::save(["assistant_enabled" => "1"]); echo "on";`);
+
+    // --- 1b. On, and where it belongs ---------------------------------
+    await page.goto(computerUrl, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(600);
+
+    check('the launcher is present once the feature is on',
       await page.locator('.glpiai-assistant-launch').count() === 1);
 
     // Where it is, not just that it exists. It was a floating button in the
@@ -169,15 +188,6 @@ const ask = async (page, text) => {
       Array.isArray(overlaps) && overlaps.length === 0, JSON.stringify(overlaps));
 
     await fullPage(page, `${SHOTS}/ai-assistant-00-launcher.png`);
-
-    await page.click('.glpiai-assistant-launch');
-    await page.waitForTimeout(1200);
-    check('but with the feature off it says so rather than answering',
-      (await page.locator('.glpiai-assistant-log').innerText()).length > 0
-      && !(await page.locator('.glpiai-assistant-log').innerText()).includes('Ask about'),
-      await page.locator('.glpiai-assistant-log').innerText());
-
-    php(`GlpiPlugin\\Glpiai\\Settings::save(["assistant_enabled" => "1"]); echo "on";`);
 
     // --- 2. Context comes from the page --------------------------------
     await page.goto(ticketUrl, { waitUntil: 'networkidle' });
