@@ -1,15 +1,14 @@
 # GLPI AI
 
-A vendor-neutral model layer for GLPI 11, and the AI features built on it.
+A vendor-neutral model layer for GLPI 11, along with the AI capabilities built on top of it.
 
-The substrate came first: one normalised request vocabulary, four provider
-adapters, tool calling with a registry other plugins extend, a per-entity gate on
-whether data may leave at all, and a record of what was asked, what answered and
-what the model went looking for.
+The foundational layer provides a normalized request vocabulary, four provider
+adapters, a tool-calling registry that other plugins can extend, a per-entity gate
+governing outbound data, and logging of requests, responses, and tool executions.
 
-On top sit the features a technician sees: triage suggestions, solution and
-article drafting, reply review, and **HEIMDALL**, a troubleshooting agent that
-can go and look.
+Technician-facing features include triage suggestions, solution and article
+drafting, reply review, and **HEIMDALL**, a troubleshooting assistant that queries
+connected tools.
 
 Depends on nothing outside GLPI's own vendor tree.
 
