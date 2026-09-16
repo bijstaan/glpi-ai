@@ -278,13 +278,8 @@ final class Settings
                 continue;
             }
 
-            // A secret that fails to decrypt is treated as absent rather than
-            // passed through as ciphertext: GLPI's key can be regenerated or
-            // lost, and sending the encrypted blob as a bearer token would
-            // produce a baffling 401 instead of an obvious "not configured".
             if ($field->isSecret()) {
-                $plain             = (new GLPIKey())->decrypt($raw);
-                $out[$field->name] = is_string($plain) ? $plain : '';
+                $out[$field->name] = self::decryptSecret($raw);
                 continue;
             }
 
@@ -292,6 +287,56 @@ final class Settings
         }
 
         return $out;
+    }
+
+    /**
+     * A stored secret in the clear, or an empty string if it cannot be read.
+     *
+     * `GLPIKey::decrypt()` has three failure modes and does not signal them
+     * alike. A wrong key and a value that was never encrypted both come back as
+     * `''`. But a **missing, unreadable or wrong-length `glpicrypt.key`** makes
+     * it return *its own input* — the ciphertext — because with no key there is
+     * nothing it can usefully say. `is_string()` does not catch that: the blob
+     * is a perfectly good string.
+     *
+     * Passed on, it travels as the credential, and the vendor answers with an
+     * authentication error describing neither the cause nor anything the
+     * administrator changed. Google's is the worst of them: an unrecognised
+     * `x-goog-api-key` is reported as *"Expected OAuth 2 access token, login
+     * cookie or other valid authentication credential"*, which sends people
+     * looking for an OAuth setting that was never involved.
+     *
+     * So a value that comes back unchanged is treated as absent. "Not
+     * configured" is true and actionable; a base64 blob posing as an API key is
+     * neither. The usual cause is a database restored onto another instance
+     * without its key file — see cryptKeyAvailable(), which names that directly.
+     */
+    public static function decryptSecret(string $raw): string
+    {
+        if ($raw === '') {
+            return '';
+        }
+
+        $plain = (new GLPIKey())->decrypt($raw);
+
+        if (!is_string($plain) || $plain === '' || $plain === $raw) {
+            return '';
+        }
+
+        return $plain;
+    }
+
+    /**
+     * Can GLPI read its own encryption key at all?
+     *
+     * Without it every stored secret in the instance is unrecoverable, which is
+     * worth saying plainly rather than letting each provider report itself as
+     * merely unconfigured. `keyExists()` rather than `get()` because `get()`
+     * raises a warning on every call when the file is absent.
+     */
+    public static function cryptKeyAvailable(): bool
+    {
+        return (bool) (new GLPIKey())->keyExists();
     }
 
     /**

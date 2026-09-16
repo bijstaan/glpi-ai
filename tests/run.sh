@@ -4,7 +4,7 @@
 # Run inside the GLPI container, from the plugin directory:
 #   docker compose -p glpi exec glpi sh -c 'cd /var/www/glpi/plugins/glpiai && tests/run.sh'
 #
-# adapters.php, tools-wire.php and streaming.php need nothing but PHP — they
+# secrets.php, adapters.php, tools-wire.php and streaming.php need nothing but PHP — they
 # assert on what the adapters send and on what they make of what comes back. integration.php, tools.php, triage.php,
 # drafts.php, reply.php, native-tools.php, discovery.php and assistant.php need the plugin to be active, and each restores the configuration and fixtures it
 # touches on the way out. discovery.php touches nothing at all: it asks
@@ -25,6 +25,7 @@ sleep 1
 rm -f /tmp/glpiai-mcp.jsonl /tmp/glpiai-oauth.json
 
 status=0
+php tests/secrets.php || status=1
 php tests/adapters.php   || status=1
 php tests/streaming.php  || status=1
 php tests/tools-wire.php || status=1

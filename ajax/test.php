@@ -25,6 +25,7 @@ use GlpiPlugin\Glpiai\AiException;
 use GlpiPlugin\Glpiai\Client;
 use GlpiPlugin\Glpiai\Prompt;
 use GlpiPlugin\Glpiai\Provider\Registry;
+use GlpiPlugin\Glpiai\Settings;
 
 header('Content-Type: application/json; charset=UTF-8');
 Html::header_nocache();
@@ -53,9 +54,18 @@ if ($provider === null) {
 }
 
 if (!$provider->isConfigured()) {
+    // A missing encryption key looks exactly like an unconfigured provider from
+    // here — the fields are filled in, they just cannot be read back — and
+    // "fill in the required fields" would send someone to re-type a key that is
+    // already correct. Say which of the two it is.
     $respond([
         'ok'      => false,
-        'message' => __('Fill in the required fields and save before testing.', 'glpiai'),
+        'message' => Settings::cryptKeyAvailable()
+            ? __('Fill in the required fields and save before testing.', 'glpiai')
+            : __('GLPI cannot read its encryption key (glpicrypt.key in the config directory), '
+               . 'so no stored credential can be decrypted. This usually means the database was '
+               . 'restored onto an instance without its key file. Restore the key from the '
+               . 'original instance, or re-enter every secret after generating a new one.', 'glpiai'),
     ]);
 }
 
