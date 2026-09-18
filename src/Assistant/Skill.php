@@ -27,6 +27,16 @@ use Html;
  * asked, bring its instructions into that request. No triggers means always on,
  * which is the honest reading of "no condition" and keeps a simple skill simple.
  *
+ * Triggers are a guess made in advance, though, and the budget is a hard edge.
+ * A skill whose triggers miss the wording the technician actually used, and one
+ * that would not fit in what is left of the budget, both used to be
+ * *invisible*: no trace in the prompt, nothing to say the site had a procedure
+ * for exactly this. So the ones that are not carried are listed instead — a
+ * name and a line each — and {@see Skillbox} gives the model a way to read one.
+ * That is the same trade {@see \GlpiPlugin\Glpiai\Toolbox} makes for tools,
+ * for the same reason: a catalogue entry costs a few words, and a procedure
+ * nobody can see is indistinguishable from one that was never written.
+ *
  * Deliberately not a tool. A tool is something the model *does*, and gets a
  * schema, a right and an audit entry. A skill is something it *knows* — it
  * changes the answer, not the world — so it needs none of that, and modelling
@@ -95,7 +105,39 @@ class Skill extends CommonDBTM
     }
 
     /**
-     * The skills that apply to one question, in the entity it is asked in.
+     * Every active skill in an entity, in name order.
+     *
+     * @return self[]
+     */
+    public static function active(int $entities_id): array
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $out = [];
+
+        foreach (
+            $DB->request([
+                'FROM'  => self::getTable(),
+                'WHERE' => ['is_active' => 1]
+                    + getEntitiesRestrictCriteria(self::getTable(), '', $entities_id, true),
+                'ORDER' => ['name'],
+            ]) as $row
+        ) {
+            if (trim((string) $row['instructions']) === '') {
+                continue;
+            }
+
+            $skill         = new self();
+            $skill->fields = $row;
+            $out[]         = $skill;
+        }
+
+        return $out;
+    }
+
+    /**
+     * The skills that apply to one question, and the ones that did not.
      *
      * Matching is on whole words, case-insensitively, against the technician's
      * own text. Substring matching was the first attempt and is wrong in a way
@@ -104,47 +146,95 @@ class Skill extends CommonDBTM
      * which quietly attaches domain-controller instructions to half the
      * conversations in the estate.
      *
-     * @return self[]
+     * A skill that triggered but does not fit the budget goes in `rest` rather
+     * than being dropped: it is the most relevant thing the model cannot see,
+     * and it is precisely what search exists for.
+     *
+     * @return array{applied:self[],rest:self[]}
      */
-    public static function matching(string $question, int $entities_id): array
+    public static function select(string $question, int $entities_id): array
     {
-        /** @var \DBmysql $DB */
-        global $DB;
+        $applied = [];
+        $rest    = [];
+        $spent   = 0;
 
-        $out   = [];
-        $spent = 0;
-
-        $criteria = [
-            'FROM'  => self::getTable(),
-            'WHERE' => ['is_active' => 1] + getEntitiesRestrictCriteria(self::getTable(), '', $entities_id, true),
-            'ORDER' => ['name'],
-        ];
-
-        foreach ($DB->request($criteria) as $row) {
-            $skill = new self();
-            $skill->fields = $row;
-
+        foreach (self::active($entities_id) as $skill) {
             if (!$skill->triggeredBy($question)) {
+                $rest[] = $skill;
                 continue;
             }
 
-            $text = trim((string) $row['instructions']);
-            if ($text === '') {
-                continue;
-            }
+            $text = trim((string) $skill->fields['instructions']);
 
             // A budget rather than a count. Ten one-line skills are cheaper
             // than one that pastes a runbook, and the thing that actually costs
             // money and dilutes attention is the characters.
             if ($spent + mb_strlen($text) > self::BUDGET) {
+                $rest[] = $skill;
                 continue;
             }
 
-            $spent += mb_strlen($text);
-            $out[]  = $skill;
+            $spent    += mb_strlen($text);
+            $applied[] = $skill;
         }
 
-        return $out;
+        return ['applied' => $applied, 'rest' => $rest];
+    }
+
+    /**
+     * The skills that apply to one question, in the entity it is asked in.
+     *
+     * @return self[]
+     */
+    public static function matching(string $question, int $entities_id): array
+    {
+        return self::select($question, $entities_id)['applied'];
+    }
+
+    /**
+     * One line saying what this skill is for, for a catalogue entry.
+     *
+     * The administrator's own comment first, because that is the field whose
+     * whole job is to say what something is. Failing that, the opening of the
+     * instructions — which are written for the model and start, nearly always,
+     * by saying when they apply.
+     */
+    public function summary(int $length = 110): string
+    {
+        $comment = trim((string) ($this->fields['comment'] ?? ''));
+
+        if ($comment === '') {
+            $lines = preg_split('/\R/', (string) $this->fields['instructions']) ?: [];
+
+            // Headings are skipped rather than stripped. Nearly every skill
+            // opens with one, and "When this applies" as a catalogue entry
+            // tells a model nothing at all — the sentence under it is the one
+            // that says what the procedure is for. A skill that is nothing but
+            // headings falls back to the first of them on the second pass,
+            // because a heading beats a blank line.
+            foreach ([true, false] as $skip_headings) {
+                foreach ($lines as $line) {
+                    $line = trim((string) $line);
+
+                    if ($skip_headings && str_starts_with($line, '#')) {
+                        continue;
+                    }
+
+                    $line = trim(ltrim($line, '#-*> '));
+
+                    if ($line !== '') {
+                        $comment = $line;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        $comment = preg_replace('/\s+/', ' ', $comment) ?? '';
+
+        return mb_strlen($comment) > $length
+            ? mb_substr($comment, 0, $length - 1) . '…'
+            : $comment;
     }
 
     /** Does this skill apply to what was asked? */
@@ -181,27 +271,60 @@ class Skill extends CommonDBTM
         return $out;
     }
 
+    /** Catalogue entries listed for skills that were not carried. */
+    public const MAX_CATALOGUE = 25;
+
     /**
-     * The skills section of a system prompt, or '' when nothing applies.
+     * The skills section of a system prompt, or '' when there are none.
+     *
+     * Two parts, and the second is the one that changed: what applies, in full,
+     * followed by a line each for what exists and does not. A model that has
+     * been told "there is a procedure here called Suspected ransomware" will
+     * reach for {@see Skillbox} when a call comes in about encrypted files; one
+     * that has been told nothing answers from general knowledge and sounds just
+     * as confident doing it.
      */
     public static function instructionsFor(string $question, int $entities_id): string
     {
-        $skills = self::matching($question, $entities_id);
-        if ($skills === []) {
+        $selected = self::select($question, $entities_id);
+
+        if ($selected['applied'] === [] && $selected['rest'] === []) {
             return '';
         }
 
-        $lines = [
-            '',
-            'The following apply to this instance. They were written by an administrator here,',
-            'they are more specific than anything you know generally, and where they conflict',
-            'with your own habits they win:',
-        ];
+        $lines = [];
 
-        foreach ($skills as $skill) {
+        if ($selected['applied'] !== []) {
             $lines[] = '';
-            $lines[] = '## ' . (string) $skill->fields['name'];
-            $lines[] = trim((string) $skill->fields['instructions']);
+            $lines[] = 'The following apply to this instance. They were written by an administrator here,';
+            $lines[] = 'they are more specific than anything you know generally, and where they conflict';
+            $lines[] = 'with your own habits they win:';
+
+            foreach ($selected['applied'] as $skill) {
+                $lines[] = '';
+                $lines[] = '## ' . (string) $skill->fields['name'];
+                $lines[] = trim((string) $skill->fields['instructions']);
+            }
+        }
+
+        if ($selected['rest'] !== []) {
+            $lines[] = '';
+            $lines[] = 'This instance has other written procedures. They are not reproduced here —';
+            $lines[] = 'read one with ' . Skillbox::NAME . ' before answering a question it covers,';
+            $lines[] = 'and follow it over your own habits:';
+            $lines[] = '';
+
+            foreach (array_slice($selected['rest'], 0, self::MAX_CATALOGUE) as $skill) {
+                $summary = $skill->summary();
+
+                $lines[] = '  - ' . (string) $skill->fields['name']
+                    . ($summary !== '' ? ' — ' . $summary : '');
+            }
+
+            $spare = count($selected['rest']) - self::MAX_CATALOGUE;
+            if ($spare > 0) {
+                $lines[] = sprintf('  - and %d more; %s finds those too.', $spare, Skillbox::NAME);
+            }
         }
 
         return implode("\n", $lines);

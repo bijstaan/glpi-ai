@@ -65,6 +65,10 @@ Depends on nothing outside GLPI's own vendor tree.
   word at a time, with a switch between keeping every step on screen and keeping
   only the one running. An answer that hits the output ceiling is carried on
   rather than cut off. Past conversations are listed and resume in place.
+- **Skills** — named blocks of instructions an administrator writes for
+  particular situations, brought into a request by trigger words or found by the
+  model with `find_skills`. The site's own procedure beats the model's general
+  knowledge, and this is where it goes.
 - **Reply review** — the one place a model here touches requester-facing text, and
   it does so by reading. A technician can ask for a second read before sending:
   internal content carried across, an unexplained term, no statement of what
@@ -107,6 +111,41 @@ Tools run with the rights and entity restriction of the signed-in user, so a
 model can only reach what the technician driving it could reach by hand. Tools
 that change data are off by default and switched on separately from the master
 switch. External MCP servers are connected under Setup → AI → MCP servers.
+
+### Skills
+
+*Setup → Assistant skills.* A named block of instructions for a situation: how a
+suspected ransomware call is handled here, what to check before escalating a VPN
+fault, the wording of a handover note. House instructions are the other half and
+a different thing — they are read on every request, so they are for what is
+always true. Putting six procedures there would work for one of them and get
+worse with each one added.
+
+A skill carries **triggers**: words that, appearing in what the technician asked,
+bring its instructions into that request. No triggers means always on, which is
+the honest reading of "no condition". What applies is read in whole, up to a
+character budget — ten one-line skills cost less than one that pastes a runbook,
+and characters are what dilute attention as well as what cost money.
+
+**What does not fit is catalogued, not dropped.** Both of the things that decide
+what gets carried are guesses made before the question was asked: the triggers an
+administrator chose, and the budget. A procedure whose triggers say "ransomware"
+is not carried by a technician who typed "all his files have gone weird", and a
+seven-thousand-character procedure is not carried at all once anything else has
+been. Neither failure used to be visible — the model answered from general
+knowledge in the same confident voice, and the site's own procedure, the one with
+the step about the shared mailbox that everybody forgets, was never mentioned.
+
+So the rest are listed in the prompt, a name and a line each, and `find_skills`
+reads one on demand. The line is the skill's Comments field, or the first real
+sentence of its instructions if there is none. It is the trade `find_tools` makes
+for tools and for the same reason: a catalogue entry costs a few words, the full
+text costs a round trip, and the round trip is spent only on the conversations
+that need it. The tool appears only on an instance that has skills written.
+
+A skill is not a tool. It changes the answer, not the world, so it has no right
+of its own, no write switch and no schema; searching for one is a tool only
+because a tool call is the only way a model has to ask for something mid-turn.
 
 ### The entity gate
 

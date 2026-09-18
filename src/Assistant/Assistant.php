@@ -110,7 +110,7 @@ final class Assistant
         $item        = Context::item((string) $thread['itemtype'], (int) $thread['items_id']);
         $entities_id = Context::entity($item);
 
-        $prompt = Prompt::make($question, self::instruction($item, $question))
+        $prompt = Prompt::make($question, self::instruction($item, $question, $entities_id))
             ->withTier(Prompt::TIER_QUALITY)
             ->withMaxTokens(self::maxTokens());
 
@@ -215,7 +215,11 @@ final class Assistant
      * machine is slow will happily produce a general answer, and the general
      * answer is the one the technician did not need.
      */
-    private static function instruction(?\CommonDBTM $item, string $question = ''): string
+    private static function instruction(
+        ?\CommonDBTM $item,
+        string $question = '',
+        ?int $entities_id = null
+    ): string
     {
         $lines = [
             'You are HEIMDALL, helping an IT technician troubleshoot. You are talking to',
@@ -265,7 +269,16 @@ final class Assistant
             $lines[] = $house;
         }
 
-        $skills = Skill::instructionsFor($question, (int) \Session::getActiveEntity());
+        // The same entity the tools were assembled for, not the session's.
+        // Those differ whenever the record the panel is open on lives
+        // elsewhere, and the prompt is about to name find_skills: a catalogue
+        // listing one entity's procedures beside a tool registered for
+        // another's is a model told to call something that was never declared.
+        $skills = Skill::instructionsFor(
+            $question,
+            $entities_id ?? (int) \Session::getActiveEntity()
+        );
+
         if ($skills !== '') {
             $lines[] = $skills;
         }

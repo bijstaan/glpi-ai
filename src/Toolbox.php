@@ -211,81 +211,37 @@ final class Toolbox
     /**
      * Rank tools against a plain-language query.
      *
-     * Word overlap against the name and description, which is crude and is the
-     * right amount of machinery: the corpus is a few dozen sentences written by
-     * us, the query comes from a model that has already been told roughly what
-     * exists, and anything cleverer would be a second retrieval system to keep
-     * working. A name match counts double because a model that knows the name
-     * is not searching, it is asking.
+     * The ranking itself is {@see Search}, shared with skill search. What stays
+     * here is the corpus: a tool is its name and its description, and
+     * `find_tools` never returns itself — a model that has just called it does
+     * not need to be told it exists.
      *
      * @param Tool[] $all
      * @return Tool[]
      */
     private static function search(array $all, string $query): array
     {
-        $terms = self::words($query);
-
-        if ($terms === []) {
-            return array_slice(array_values($all), 0, self::MAX_MATCHES);
-        }
-
-        $scored = [];
+        $corpus = [];
+        $byName = [];
 
         foreach ($all as $tool) {
             if ($tool->name === self::NAME) {
                 continue;
             }
 
-            $name_words = self::words(str_replace('_', ' ', $tool->name));
-            $desc_words = self::words($tool->description);
-
-            $score = count(array_intersect($terms, $name_words)) * 2
-                   + count(array_intersect($terms, $desc_words));
-
-            if ($score > 0) {
-                $scored[] = ['tool' => $tool, 'score' => $score];
-            }
+            $byName[$tool->name] = $tool;
+            $corpus[]            = [
+                'key'  => $tool->name,
+                'name' => $tool->name,
+                'text' => $tool->description,
+            ];
         }
 
-        usort($scored, static fn(array $a, array $b): int => $b['score'] <=> $a['score']);
+        $out = [];
+        foreach (Search::rank($corpus, $query, self::MAX_MATCHES) as $name) {
+            $out[] = $byName[(string) $name];
+        }
 
-        return array_map(
-            static fn(array $row): Tool => $row['tool'],
-            array_slice($scored, 0, self::MAX_MATCHES)
-        );
-    }
-
-    /**
-     * @return string[]
-     */
-    private static function words(string $text): array
-    {
-        $words = preg_split('/[^a-z0-9]+/', mb_strtolower($text)) ?: [];
-
-        // Stopwords, and the tool-description filler that behaves like one.
-        // Without this every query matches every tool on "use" and "this".
-        static $noise = [
-            'the', 'and', 'for', 'this', 'that', 'with', 'use', 'used', 'using', 'get', 'from',
-            'what', 'when', 'which', 'their', 'them', 'you', 'your', 'are', 'was', 'not', 'its',
-            'tool', 'tools', 'returns', 'return', 'about', 'into', 'out', 'one', 'can',
-        ];
-
-        $kept = array_filter(
-            $words,
-            static fn(string $w): bool => strlen($w) > 2 && !in_array($w, $noise, true)
-        );
-
-        // Collapse a trailing plural, so "machine" matches "machines" and
-        // "alarm" matches "alarms". Crude stemming, and the right amount for a
-        // corpus of English tool descriptions we wrote ourselves — without it
-        // the single most obvious query ("check disk space on a machine")
-        // misses the tool that answers it, on an 's'.
-        return array_values(array_unique(array_map(
-            static fn(string $w): string => strlen($w) > 3 && str_ends_with($w, 's')
-                && !str_ends_with($w, 'ss')
-                ? substr($w, 0, -1)
-                : $w,
-            $kept
-        )));
+        return $out;
     }
 }

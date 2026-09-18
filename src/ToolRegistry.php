@@ -6,6 +6,7 @@
 
 namespace GlpiPlugin\Glpiai;
 
+use GlpiPlugin\Glpiai\Assistant\Skillbox;
 use GlpiPlugin\Glpiai\Mcp\Catalogue;
 use GlpiPlugin\Glpiai\Tools\Organisation;
 use GlpiPlugin\Glpiai\Tools\Estate;
@@ -30,7 +31,10 @@ use GlpiPlugin\Glpiai\Tools\WriteTicket;
 /**
  * Everything the model may be told it can do, from three sources.
  *
- * 1. **Native tools** — a small read-only set over GLPI's own data.
+ * 1. **Native tools** — a small read-only set over GLPI's own data, plus
+ *    `find_skills` on an instance that has written procedures: what the model
+ *    can *do* and what the site has told it to do are both things it has to be
+ *    able to ask for. See {@see Skillbox}.
  * 2. **Other plugins**, through the `glpiai_tools` hook. This is the reason the
  *    registry exists rather than a hard-coded array: glpi-sop knows what a
  *    procedure's steps say, glpi-osquery knows what a machine looked like an
@@ -57,7 +61,18 @@ final class ToolRegistry
     {
         $tools = [];
 
-        foreach ([self::native(), self::fromPlugins(), self::fromMcp($entities_id)] as $source) {
+        // Skill search is the one native tool that depends on the entity, and
+        // it is spliced in here rather than in native() for that reason: an
+        // instance with no skills written gets no tool, and an administrator
+        // who has never used the feature is never shown one.
+        foreach (
+            [
+                self::native(),
+                Skillbox::tools($entities_id),
+                self::fromPlugins(),
+                self::fromMcp($entities_id),
+            ] as $source
+        ) {
             foreach ($source as $tool) {
                 if (!$tool instanceof Tool) {
                     continue;
