@@ -24,9 +24,18 @@ use GlpiPlugin\Glpiai\Prompt;
  *    resources use.
  *  - `foundry`: a single `/models/chat/completions` route where the model is
  *    named in the body, as everywhere else.
+ *  - `responses`: the v1 route's `/openai/v1/responses`, a different API rather
+ *    than a different URL — see {@see Responses}.
  *
  * Getting this wrong produces a 404 rather than anything descriptive, so the
  * setting is explicit rather than guessed from the URL.
+ *
+ * **The Responses style is the one to use on current models.** Dated
+ * api-versions stopped being issued in August 2025, so a model released since
+ * then is reachable only through the v1 route, and from `gpt-5.6` onward Chat
+ * Completions rejects any request carrying `tools` unless `reasoning_effort` is
+ * `none`. On an assistant with ninety-odd tools registered, that is the whole
+ * feature. The two chat styles stay for the resources already pointed at them.
  *
  * Auth is either a flat API key or a Microsoft Entra service principal. The
  * service principal is the better answer for anything long-lived — the secret
@@ -66,6 +75,7 @@ final class AzureFoundry extends OpenAi
                     . 'names the model in the request body. The wrong choice returns 404.', 'glpiai'),
                 default: 'azure_openai',
                 options: [
+                    'responses'    => __('Responses API (v1 route, current models)', 'glpiai'),
                     'azure_openai' => __('Azure OpenAI deployment (name in URL)', 'glpiai'),
                     'foundry'      => __('Foundry model inference (name in body)', 'glpiai'),
                 ]
@@ -74,7 +84,9 @@ final class AzureFoundry extends OpenAi
                 'api_version',
                 __('API version', 'glpiai'),
                 Field::TEXT,
-                __('Azure requires an explicit api-version on every request.', 'glpiai'),
+                __('Azure requires an explicit api-version on the two chat styles. The Responses '
+                    . 'style uses the v1 route, which versions itself: only v1 or preview mean '
+                    . 'anything there and a dated value is dropped rather than sent.', 'glpiai'),
                 default: '2024-10-21',
                 required: true
             ),
@@ -136,6 +148,32 @@ final class AzureFoundry extends OpenAi
                     'max_completion_tokens' => 'max_completion_tokens',
                 ]
             ),
+            new Field(
+                'reasoning_effort',
+                __('Reasoning effort', 'glpiai'),
+                Field::SELECT,
+                __('Responses style only. How much the model thinks before answering; the '
+                    . 'accepted values vary by model, and an unsupported one is rejected. Leave '
+                    . 'empty to use whatever the model defaults to.', 'glpiai'),
+                options: [
+                    ''        => __('Model default', 'glpiai'),
+                    'none'    => 'none',
+                    'minimal' => 'minimal',
+                    'low'     => 'low',
+                    'medium'  => 'medium',
+                    'high'    => 'high',
+                    'xhigh'   => 'xhigh',
+                    'max'     => 'max',
+                ]
+            ),
+            new Field(
+                'thinking',
+                __('Ask for thought summaries', 'glpiai'),
+                Field::CHECKBOX,
+                __('Responses style only. Shows the model\'s reasoning in the assistant panel as '
+                    . 'it works, on models that think. Off by default because a model that does '
+                    . 'not rejects the request outright.', 'glpiai')
+            ),
         ];
     }
 
@@ -155,12 +193,23 @@ final class AzureFoundry extends OpenAi
         return $this->declared('auth_mode') === 'service_principal';
     }
 
+
     // ------------------------------------------------------------------ URL
 
     protected function endpointFor(string $model): string
     {
         $base    = $this->baseUrl('');
         $version = rawurlencode($this->declared('api_version'));
+
+        if ($this->usesResponses()) {
+            // The v1 route carries its version in the path. `api-version` is
+            // optional there and accepts only `v1` or `preview`, so a value left
+            // over from the dated era is dropped rather than sent — otherwise
+            // switching an existing resource to this style would answer
+            // "API version not supported" and look like the style was wrong.
+            return sprintf('%s/openai/v1/responses', $base)
+                . (in_array($version, ['v1', 'preview'], true) ? '?api-version=' . $version : '');
+        }
 
         if ($this->declared('api_style') === 'foundry') {
             return sprintf('%s/models/chat/completions?api-version=%s', $base, $version);
@@ -224,7 +273,7 @@ final class AzureFoundry extends OpenAi
         // In the Azure OpenAI style the deployment in the URL selects the
         // model, and a `model` key in the body is at best ignored — at worst
         // rejected by an API-management policy in front of the resource.
-        if ($this->declared('api_style') !== 'foundry') {
+        if ($this->declared('api_style') === 'azure_openai') {
             unset($body['model']);
         }
 

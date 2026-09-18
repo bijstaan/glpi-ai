@@ -73,6 +73,16 @@ function check(string $name, bool $ok, string $detail = ''): void
  * @var array<string,string>
  */
 const QUESTIONS = [
+    // The service catalog and the form builder.
+    'what is in the service catalog'                      => 'list_service_catalog',
+    'can users request a new laptop themselves'           => 'list_service_catalog',
+    'what request forms do we already have'               => 'find_forms',
+    'what questions does the access request form ask'     => 'read_form',
+    'what field types can a form have'                    => 'list_question_types',
+    'create a new starter request form'                   => 'draft_form',
+    'add a question to the onboarding form'               => 'add_form_question',
+    'change the dropdown choices on that form'            => 'update_form_question',
+
     // The native reads.
     'how long have I got on this ticket'                  => 'sla_status',
     'how many tickets did this entity raise last month' => 'ticket_stats',

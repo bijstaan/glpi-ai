@@ -14,17 +14,24 @@ use GlpiPlugin\Glpiai\ToolCall;
 use GlpiPlugin\Glpiai\Usage;
 
 /**
- * OpenAI, via Chat Completions.
+ * OpenAI, via the Responses API — or Chat Completions, for gateways.
  *
- * Chat Completions rather than the newer Responses API, deliberately: this
- * adapter is also the one people point at self-hosted gateways — LiteLLM,
- * vLLM, OpenRouter, an enterprise proxy — and `/v1/chat/completions` is the
- * shape all of those actually speak. Picking the newer API would buy features
- * this layer does not expose and lose most of the compatibility that makes the
- * custom-endpoint setting worth having.
+ * Responses is the default and is what OpenAI itself should be pointed at. It
+ * is the only endpoint where a reasoning model may also call tools: from
+ * `gpt-5.6` onward a Chat Completions request carrying `tools` is rejected
+ * outright unless `reasoning_effort` is `none`, which on an assistant with
+ * ninety-odd tools registered means choosing between thinking and doing.
  *
- * It is also the base for {@see AzureFoundry}, whose request body is identical
- * and whose URL and auth are not.
+ * Chat Completions stays because this adapter does double duty: it is also the
+ * one people point at self-hosted gateways — LiteLLM, vLLM, OpenRouter, Ollama,
+ * an enterprise proxy — and `/v1/chat/completions` is the shape all of those
+ * speak. None of them implements Responses. That is what the `api_style`
+ * setting selects, and it is why the older path is not dead weight: it is the
+ * only thing a gateway understands.
+ *
+ * The translation itself lives in {@see Responses}, not here, because
+ * {@see AzureFoundry} — which extends this class for its body and parser, and
+ * overrides only URL and auth — needs the same one.
  */
 class OpenAi extends AbstractProvider implements StreamingProvider
 {
@@ -71,12 +78,55 @@ class OpenAi extends AbstractProvider implements StreamingProvider
                 __('For drafting and summarising. Falls back to the fast model if empty.', 'glpiai')
             ),
             new Field(
+                'api_style',
+                __('API', 'glpiai'),
+                Field::SELECT,
+                __('Responses is OpenAI\'s current API and the only one where a reasoning model '
+                    . 'can also call tools. Chat Completions is for OpenAI-compatible gateways — '
+                    . 'LiteLLM, vLLM, OpenRouter, Ollama — none of which implement Responses. '
+                    . 'Automatic reads the endpoint: OpenAI itself gets Responses, and anything '
+                    . 'behind a custom endpoint gets Chat Completions.', 'glpiai'),
+                default: 'auto',
+                options: [
+                    'auto'      => __('Automatic', 'glpiai'),
+                    'responses' => __('Responses (OpenAI)', 'glpiai'),
+                    'chat'      => __('Chat Completions (compatible gateways)', 'glpiai'),
+                ]
+            ),
+            new Field(
+                'reasoning_effort',
+                __('Reasoning effort', 'glpiai'),
+                Field::SELECT,
+                __('Responses only. How much the model thinks before answering; the accepted '
+                    . 'values vary by model, and an unsupported one is rejected. Leave empty to '
+                    . 'use whatever the model defaults to.', 'glpiai'),
+                options: [
+                    ''        => __('Model default', 'glpiai'),
+                    'none'    => 'none',
+                    'minimal' => 'minimal',
+                    'low'     => 'low',
+                    'medium'  => 'medium',
+                    'high'    => 'high',
+                    'xhigh'   => 'xhigh',
+                    'max'     => 'max',
+                ]
+            ),
+            new Field(
+                'thinking',
+                __('Ask for thought summaries', 'glpiai'),
+                Field::CHECKBOX,
+                __('Responses only. Shows the model\'s reasoning in the assistant panel as it '
+                    . 'works, on models that think. Off by default because a model that does not '
+                    . 'rejects the request outright.', 'glpiai')
+            ),
+            new Field(
                 'token_param',
                 __('Output-limit parameter', 'glpiai'),
                 Field::SELECT,
-                __('OpenAI\'s newer models require max_completion_tokens and reject max_tokens; '
-                    . 'most third-party OpenAI-compatible gateways only understand max_tokens. '
-                    . 'If requests fail complaining about one of these, switch to the other.', 'glpiai'),
+                __('Chat Completions only — Responses names this itself. OpenAI\'s newer models '
+                    . 'require max_completion_tokens and reject max_tokens; most third-party '
+                    . 'gateways only understand max_tokens. If requests fail complaining about '
+                    . 'one of these, switch to the other.', 'glpiai'),
                 default: 'max_completion_tokens',
                 options: [
                     'max_completion_tokens' => 'max_completion_tokens',
@@ -93,7 +143,21 @@ class OpenAi extends AbstractProvider implements StreamingProvider
 
     public function complete(Prompt $prompt): Completion
     {
-        $model    = $this->modelFor($prompt->tier);
+        $model = $this->modelFor($prompt->tier);
+
+        if ($this->usesResponses()) {
+            return $this->parseResponses(
+                $this->postJson(
+                    $this->endpointFor($model),
+                    $this->authHeaders(),
+                    $this->responsesBody($prompt, $model),
+                    $prompt->timeout
+                ),
+                $model,
+                $prompt
+            );
+        }
+
         $response = $this->postJson(
             $this->endpointFor($model),
             $this->authHeaders(),
@@ -102,6 +166,95 @@ class OpenAi extends AbstractProvider implements StreamingProvider
         );
 
         return $this->parse($response, $model, $prompt);
+    }
+
+    // ------------------------------------------------------------ responses
+
+    /**
+     * Is this instance speaking Responses?
+     *
+     * Reads the setting through {@see AbstractProvider::declared()}, so each
+     * subclass's own field declaration supplies the default — `responses` here,
+     * and the existing chat style on {@see AzureFoundry}, whose resources were
+     * configured before this path existed and should not move on their own.
+     */
+    protected function usesResponses(): bool
+    {
+        $style = $this->declared('api_style');
+
+        // `auto` is the default, and it exists for the upgrade rather than for
+        // the choice. An installation configured before this setting existed has
+        // no value stored, so whatever `auto` decides is what happens to it
+        // without anyone being asked — and pointing a gateway at an endpoint it
+        // does not implement fails on the next request, not at save time. A
+        // custom endpoint is the one reliable signal that something other than
+        // OpenAI is answering, so it is read as "leave this alone".
+        if ($style === 'auto') {
+            return $this->setting('base_url') === '';
+        }
+
+        return $style === 'responses';
+    }
+
+    /** @return array<string,mixed> */
+    protected function responsesBody(Prompt $prompt, string $model): array
+    {
+        return Responses::body($prompt, $model, [
+            'effort'  => $this->declared('reasoning_effort'),
+            'summary' => $this->flag('thinking'),
+            'schema'  => $prompt->schema !== null ? $this->strictSchema($prompt->schema) : null,
+        ]);
+    }
+
+    /** @param array<string,mixed> $response */
+    protected function parseResponses(array $response, string $model, Prompt $prompt): Completion
+    {
+        return Responses::parse(
+            $response,
+            static::id(),
+            $model,
+            $prompt->schema !== null ? fn(string $text): ?array => $this->decodeJson($text) : null
+        );
+    }
+
+    /**
+     * A streamed answer from the Responses API.
+     *
+     * Kept apart from the Chat Completions reader below rather than folded into
+     * it: the two share the SSE framing and nothing else. Chat streams partial
+     * copies of one answer and makes you reassemble tool calls from fragments;
+     * Responses streams typed events and hands back the finished object at the
+     * end, which goes to the same parser the non-streaming path uses.
+     *
+     * @param callable(string,string):void $onDelta
+     */
+    protected function streamResponses(Prompt $prompt, callable $onDelta): Completion
+    {
+        $model = $this->modelFor($prompt->tier);
+        $final = [];
+
+        $this->postSse(
+            $this->endpointFor($model),
+            $this->authHeaders(),
+            $this->responsesBody($prompt, $model) + ['stream' => true],
+            $prompt->timeout,
+            static function (array $frame) use (&$final, $onDelta): void {
+                Responses::frame($frame, $final, $onDelta);
+            }
+        );
+
+        if ($final === []) {
+            // No terminal event arrived. Reported rather than parsed as an empty
+            // answer, which is what a cut-off stream would otherwise look like
+            // to every caller downstream.
+            throw new AiException(
+                AiException::SERVER,
+                'The stream ended without a completed response.',
+                static::id()
+            );
+        }
+
+        return $this->parseResponses($final, $model, $prompt);
     }
 
     /**
@@ -125,6 +278,10 @@ class OpenAi extends AbstractProvider implements StreamingProvider
      */
     public function stream(Prompt $prompt, callable $onDelta): Completion
     {
+        if ($this->usesResponses()) {
+            return $this->streamResponses($prompt, $onDelta);
+        }
+
         $model = $this->modelFor($prompt->tier);
 
         $body = $this->buildBody($prompt, $model) + ['stream' => true];
@@ -214,7 +371,10 @@ class OpenAi extends AbstractProvider implements StreamingProvider
 
     protected function endpointFor(string $model): string
     {
-        return $this->endpointUrl(self::DEFAULT_BASE, '/v1/chat/completions');
+        return $this->endpointUrl(
+            self::DEFAULT_BASE,
+            $this->usesResponses() ? '/v1/responses' : '/v1/chat/completions'
+        );
     }
 
     /** @return array<string,string> */

@@ -14,6 +14,7 @@ use GlpiPlugin\Glpiai\Tools\FindAsset;
 use GlpiPlugin\Glpiai\Tools\History;
 use GlpiPlugin\Glpiai\Tools\Network;
 use GlpiPlugin\Glpiai\Tools\People;
+use GlpiPlugin\Glpiai\Tools\ReadForms;
 use GlpiPlugin\Glpiai\Tools\ReadAsset;
 use GlpiPlugin\Glpiai\Tools\ReadItil;
 use GlpiPlugin\Glpiai\Tools\ReadTicket;
@@ -24,6 +25,7 @@ use GlpiPlugin\Glpiai\Tools\Team;
 use GlpiPlugin\Glpiai\Tools\Stats;
 use GlpiPlugin\Glpiai\Tools\ServiceLevel;
 use GlpiPlugin\Glpiai\Tools\Workflow;
+use GlpiPlugin\Glpiai\Tools\WriteForms;
 use GlpiPlugin\Glpiai\Tools\WriteItil;
 use GlpiPlugin\Glpiai\Tools\WriteKnowledge;
 use GlpiPlugin\Glpiai\Tools\WriteTicket;
@@ -161,7 +163,8 @@ final class ToolRegistry
             Network::trace(),
             Network::ports(),
             WriteKnowledge::tool(),
-        ], Organisation::tools(), Estate::tools(), Team::tools(), Workflow::tools(), WriteItil::tools(), WriteTicket::tools());
+        ], Organisation::tools(), Estate::tools(), Team::tools(), Workflow::tools(), ReadForms::tools(),
+            WriteItil::tools(), WriteTicket::tools(), WriteForms::tools());
     }
 
     /**

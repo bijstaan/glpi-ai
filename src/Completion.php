@@ -29,7 +29,21 @@ final class Completion
         /** The raw decoded response body, for debugging. */
         public readonly array $raw = [],
         /** @var ToolCall[] tools the model wants run before it can answer */
-        public readonly array $tool_calls = []
+        public readonly array $tool_calls = [],
+        /**
+         * Opaque per-vendor data that must be echoed back verbatim.
+         *
+         * The same escape hatch {@see ToolCall::$vendor} provides, one level up,
+         * because not every vendor's extra state belongs to a single call. The
+         * Responses API returns reasoning items alongside the calls, carrying
+         * `encrypted_content`; replaying the calls without them leaves the model
+         * starting each turn blind to its own thinking. Nothing here looks
+         * inside — {@see Message::toolCalls()} carries it back to the adapter
+         * that produced it.
+         *
+         * @var array<int,mixed>
+         */
+        public readonly array $vendor = []
     ) {
     }
 
@@ -59,8 +73,8 @@ final class Completion
     {
         return in_array(
             $this->finish_reason,
-            // Anthropic | OpenAI | Gemini
-            ['max_tokens', 'length', 'MAX_TOKENS'],
+            // Anthropic | OpenAI | Gemini | OpenAI Responses
+            ['max_tokens', 'length', 'MAX_TOKENS', 'max_output_tokens'],
             true
         );
     }

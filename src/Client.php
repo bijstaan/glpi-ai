@@ -154,7 +154,7 @@ final class Client
             // The model's own turn goes back verbatim before the answers do:
             // all three conventions correlate a result to its request, and a
             // transcript with orphaned results is rejected rather than ignored.
-            $prompt->add(Message::toolCalls($completion->text, $completion->tool_calls));
+            $prompt->add(Message::toolCalls($completion->text, $completion->tool_calls, $completion->vendor));
 
             $results           = [];
             $turn_invocations  = [];

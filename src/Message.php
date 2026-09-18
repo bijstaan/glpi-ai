@@ -40,7 +40,18 @@ final class Message
         public readonly string $role,
         public readonly string $content,
         public readonly array $tool_calls = [],
-        public readonly array $tool_results = []
+        public readonly array $tool_results = [],
+        /**
+         * The provider's own rendering of this turn, echoed back verbatim.
+         *
+         * Set only by an adapter whose transcript is not fully described by
+         * text-and-calls — the Responses API, whose reasoning items have to
+         * survive the round trip. Only the adapter that produced it reads it,
+         * and an adapter that never sets it is unaffected.
+         *
+         * @var array<int,mixed>
+         */
+        public readonly array $vendor = []
     ) {
     }
 
@@ -64,9 +75,9 @@ final class Message
      *
      * @param ToolCall[] $calls
      */
-    public static function toolCalls(string $content, array $calls): self
+    public static function toolCalls(string $content, array $calls, array $vendor = []): self
     {
-        return new self(self::ASSISTANT, $content, $calls);
+        return new self(self::ASSISTANT, $content, $calls, [], $vendor);
     }
 
     /** @param ToolResult[] $results */
