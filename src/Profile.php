@@ -32,7 +32,7 @@ use Html;
  */
 class Profile extends CommonGLPI
 {
-    public static $rightname = 'profile';
+    public static string $rightname = 'profile';
 
     public static function getTypeName($nb = 0)
     {

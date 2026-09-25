@@ -164,7 +164,7 @@ final class Stats
                     // somebody asking this question cares most about.
                     ['AND' => [
                         ['NOT' => ['solvedate' => null]],
-                        new \QueryExpression(
+                        new \Glpi\DBAL\QueryExpression(
                             $DB->quoteName('solvedate') . ' > ' . $DB->quoteName('time_to_resolve')
                         ),
                     ]],
@@ -297,7 +297,7 @@ final class Stats
 
             $query['SELECT'] = [
                 "$table.$column AS value",
-                new \QueryExpression('COUNT(DISTINCT ' . $DB->quoteName('glpi_tickets.id') . ') AS cnt'),
+                new \Glpi\DBAL\QueryExpression('COUNT(DISTINCT ' . $DB->quoteName('glpi_tickets.id') . ') AS cnt'),
             ];
             $query['INNER JOIN'] = [
                 $table => [
@@ -312,7 +312,7 @@ final class Stats
         } else {
             $query['SELECT'] = [
                 $spec['column'] . ' AS value',
-                new \QueryExpression('COUNT(*) AS cnt'),
+                new \Glpi\DBAL\QueryExpression('COUNT(*) AS cnt'),
             ];
             $query['GROUPBY'] = [$spec['column']];
         }
@@ -348,7 +348,7 @@ final class Stats
             $with = (int) countElementsInTable(
                 Ticket::getTable(),
                 array_merge($criteria, [
-                    ['glpi_tickets.id' => new \QuerySubQuery([
+                    ['glpi_tickets.id' => new \Glpi\DBAL\QuerySubQuery([
                         'SELECT' => 'tickets_id',
                         'FROM'   => $table,
                         'WHERE'  => ['type' => $type],

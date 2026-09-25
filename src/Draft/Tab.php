@@ -30,7 +30,7 @@ use Ticket;
  */
 class Tab extends CommonGLPI
 {
-    public static $rightname = 'ticket';
+    public static string $rightname = 'ticket';
 
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
     {

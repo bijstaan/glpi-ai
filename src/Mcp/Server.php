@@ -31,13 +31,13 @@ use Html;
  */
 class Server extends CommonDBTM
 {
-    public static $rightname = 'plugin_glpiai_config';
+    public static string $rightname = 'plugin_glpiai_config';
 
     /** Per-tool overrides. Absence of either means "use the annotations". */
     public const TOOL_READ  = 'read';
     public const TOOL_WRITE = 'write';
 
-    public $dohistory = true;
+    public bool $dohistory = true;
 
     public const AUTH_NONE   = 'none';
     public const AUTH_BEARER = 'bearer';

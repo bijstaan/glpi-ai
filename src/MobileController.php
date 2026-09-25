@@ -54,7 +54,7 @@ use Ticket;
 #[Route(path: '/GlpiAi', tags: ['GlpiAi'])]
 final class MobileController extends AbstractController
 {
-    protected static function getRawKnownSchemas(): array
+    protected static function getRawKnownSchemas(string $api_version = ''): array
     {
         return [];
     }

@@ -50,7 +50,7 @@ class Grant extends CommonDBTM
      * call that could read somebody else's — which is a stronger guarantee than
      * a right, and does not require inventing one.
      */
-    public static $rightname = '';
+    public static string $rightname = '';
 
     /** How long an in-flight authorization may sit unfinished. */
     public const PENDING_TTL = 600;

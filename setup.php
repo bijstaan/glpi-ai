@@ -28,7 +28,7 @@ use GlpiPlugin\Glpiai\MobileController;
 use GlpiPlugin\Glpiai\Settings;
 
 define('PLUGIN_GLPIAI_VERSION', '0.7.0');
-define('PLUGIN_GLPIAI_MIN_GLPI', '11.0');
+define('PLUGIN_GLPIAI_MIN_GLPI', '12.0');
 
 // Settings and provider credentials live under this config context.
 define('PLUGIN_GLPIAI_CONFIG_CONTEXT', 'plugin:glpiai');

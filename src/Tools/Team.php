@@ -221,7 +221,7 @@ final class Team
             [
                 'is_deleted' => 0,
                 ['NOT' => ['status' => $open]],
-                ['glpi_tickets.id' => new \QuerySubQuery([
+                ['glpi_tickets.id' => new \Glpi\DBAL\QuerySubQuery([
                     'SELECT' => 'tickets_id',
                     'FROM'   => 'glpi_groups_tickets',
                     'WHERE'  => [

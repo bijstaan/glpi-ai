@@ -45,7 +45,7 @@ use Html;
  */
 class Skill extends CommonDBTM
 {
-    public static $rightname = 'plugin_glpiai_config';
+    public static string $rightname = 'plugin_glpiai_config';
 
     /** How much skill text one request may carry, in characters. */
     public const BUDGET = 8000;

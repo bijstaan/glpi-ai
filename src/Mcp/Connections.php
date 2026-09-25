@@ -34,7 +34,7 @@ use Session;
  */
 class Connections extends CommonGLPI
 {
-    public static $rightname = '';
+    public static string $rightname = '';
 
     public static function getTypeName($nb = 0)
     {
