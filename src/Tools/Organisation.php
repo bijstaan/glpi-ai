@@ -136,7 +136,7 @@ final class Organisation
         $out = [];
 
         foreach (
-            getAllDataFromTable(Entity::getTable(), ['entities_id' => $id], false, 'name') as $row
+            getAllDataFromTable(Entity::getTable(), ['entities_id' => $id, 'ORDER' => 'name']) as $row
         ) {
             if (!\Session::haveAccessToEntity((int) $row['id'])) {
                 continue;

@@ -329,9 +329,7 @@ final class ReadTicket
     {
         $rows = getAllDataFromTable(
             (new ITILSolution())->getTable(),
-            ['itemtype' => Ticket::class, 'items_id' => $id],
-            false,
-            'date_creation DESC'
+            ['itemtype' => Ticket::class, 'items_id' => $id, 'ORDER' => 'date_creation DESC']
         );
 
         foreach ($rows as $row) {

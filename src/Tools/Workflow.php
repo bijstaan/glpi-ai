@@ -130,9 +130,7 @@ final class Workflow
         foreach (
             getAllDataFromTable(
                 $class::getTable(),
-                [$fk => $items_id],
-                false,
-                'submission_date'
+                [$fk => $items_id, 'ORDER' => 'submission_date']
             ) as $row
         ) {
             $rows[] = self::describe($row);
@@ -165,9 +163,7 @@ final class Workflow
             foreach (
                 getAllDataFromTable(
                     $class::getTable(),
-                    ['status' => CommonITILValidation::WAITING],
-                    false,
-                    'submission_date'
+                    ['status' => CommonITILValidation::WAITING, 'ORDER' => 'submission_date']
                 ) as $row
             ) {
                 if (!self::addressedTo($row, $me, $groups)) {
@@ -376,9 +372,7 @@ final class Workflow
         foreach (
             getAllDataFromTable(
                 QueuedNotification::getTable(),
-                ['itemtype' => $itemtype, 'items_id' => $items_id],
-                false,
-                'create_time DESC'
+                ['itemtype' => $itemtype, 'items_id' => $items_id, 'ORDER' => 'create_time DESC']
             ) as $row
         ) {
             $sent  = self::stamp($row['sent_time'] ?? null);

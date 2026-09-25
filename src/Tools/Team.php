@@ -175,7 +175,8 @@ final class Team
         foreach (
             getAllDataFromTable(Group::getTable(), [
                 'name' => ['LIKE', '%' . $name . '%'],
-            ], false, 'name') as $row
+                'ORDER' => 'name',
+            ]) as $row
         ) {
             $candidate         = new Group();
             $candidate->fields = $row;
@@ -240,7 +241,7 @@ final class Team
         $out = [];
 
         foreach (
-            getAllDataFromTable(Group::getTable(), ['groups_id' => $groups_id], false, 'name') as $row
+            getAllDataFromTable(Group::getTable(), ['groups_id' => $groups_id, 'ORDER' => 'name']) as $row
         ) {
             $child         = new Group();
             $child->fields = $row;
@@ -383,7 +384,8 @@ final class Team
                     ['realname'  => ['LIKE', '%' . $name . '%']],
                     ['firstname' => ['LIKE', '%' . $name . '%']],
                 ],
-            ], false, 'name') as $row
+                'ORDER' => 'name',
+            ]) as $row
         ) {
             return (int) $row['id'];
         }

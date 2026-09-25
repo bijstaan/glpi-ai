@@ -372,9 +372,7 @@ final class ReadItil
     {
         $rows = getAllDataFromTable(
             (new ITILSolution())->getTable(),
-            ['itemtype' => $itemtype, 'items_id' => $id],
-            false,
-            'date_creation DESC'
+            ['itemtype' => $itemtype, 'items_id' => $id, 'ORDER' => 'date_creation DESC']
         );
 
         foreach ($rows as $row) {

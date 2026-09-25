@@ -600,7 +600,7 @@ final class Estate
                 ]];
             }
 
-            foreach (getAllDataFromTable($class::getTable(), $criteria, false, 'name') as $row) {
+            foreach (getAllDataFromTable($class::getTable(), ['ORDER' => 'name'] + $criteria) as $row) {
                 $left = (int) countElementsInTable($source['stock'], [
                     $source['fk'] => (int) $row['id'],
                     'date_out'    => null,
